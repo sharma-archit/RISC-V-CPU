@@ -17,7 +17,7 @@ logic [31:0][31:0] cpu_register;
 
 always_ff @(posedge clk) begin
 
-//Reset reg file
+    //Reset reg file
     if (rst == 1) begin
 
         for (int i = 0; i < 32; i++) begin

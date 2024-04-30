@@ -1,4 +1,4 @@
-module moduleName (
+module dataMemory (
     input  read_en,
     input  write_en,
     input  [31:0] read_addr,

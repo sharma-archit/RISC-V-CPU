@@ -71,8 +71,6 @@ case (instruction_decoder[6:0])
 
     end
 
-    
-
     BRANCH: begin
         if (instruction_decoder[14:12] == 3'b000) begin : BEQ
         
@@ -264,6 +262,7 @@ case (instruction_decoder[6:0])
         if (instruction_decoder[14:12] == 3'b000) begin : ADDI
 
             immediate_decoder = instruction_decoder[31:20];
+            
             sign_extend_decoder = 1;
             reg_read1_enable_decoder = 1;
             reg_read1_address_decoder = instruction_decoder[19:15];
@@ -366,118 +365,124 @@ case (instruction_decoder[6:0])
         
         if (instruction_decoder[14:12] == 3'b000 && instruction_decoder[31:25] == 7'b0000000) begin : ADD
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b000 && instruction_decoder[31:25] == 7'b0100000) begin : SUB
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SLL
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SLT
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SLTU
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : XOR
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SRL
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0100000) begin : SRA
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : OR
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : AND
 
-        reg_read1_enable_decoder = 1;
-        reg_read2_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        reg_read2_address_decoder = instruction_decoder[24:20];
-        alu_function_decoder = instruction_decoder[14:12];
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+            reg_read1_enable_decoder = 1;
+            reg_read2_enable_decoder = 1;
+            reg_read1_address_decoder = instruction_decoder[19:15];
+            reg_read2_address_decoder = instruction_decoder[24:20];
+            alu_function_decoder = instruction_decoder[14:12];
+            reg_write_enable_decoder = 1;
+            reg_write_address_decoder = instruction_decoder[11:7];
 
         end
 
     end
     
-    ECB: 
+    ECB: begin
+        
+        if(instruction_decoder[31:20] == 12'b000000000000) begin : ECALL
+        end
+        if(instruction_decoder[31:20] == 12'b000000000001) begin : EBREAK
+        end
+    end
     
     default: 
     // check if riscv requires us to raise an exception if invalid instruction 
