@@ -1,26 +1,29 @@
-module reg_file (
+module reg_file #(parameter ADDR_SIZE = 6;
+                  parameter XLEN = 32;)
+(
     input clk,
     input rst,
     input write_en,
     input read_en1,
     input read_en2,
-    input [5:0] read_addr1,
-    input [5:0] read_addr2,
-    input [5:0] write_addr,
-    input [31:0] write_data,
-    output logic [31:0] read_data1,
-    output logic [31:0] read_data2,
+    input [ADDR_SIZE - 1:0] read_addr1,
+    input [ADDR_SIZE - 1:0] read_addr2,
+    input [ADDR_SIZE - 1:0] write_addr,
+    input [XLEN - 1:0] write_data,
+    output logic [XLEN - 1:0] read_data1,
+    output logic [XLEN - 1:0] read_data2,
 );
 
-//Registor data storage
-logic [31:0][31:0] cpu_register;
+//Register data storage
+localparam NUM_REGISTERS = 32; // Number of registers in the register file
+logic [NUM_REGISTERS - 1:0][XLEN - 1:0] cpu_register;
 
 always_ff @(posedge clk) begin
 
     //Reset reg file
     if (rst == 1) begin
 
-        for (int i = 0; i < 32; i++) begin
+        for (int i = 0; i < NUM_REGISTERS; i++) begin
 
             cpu_register[i] <= '0;
 
@@ -47,6 +50,11 @@ always_ff @(posedge clk) begin
 
             read_data2 <= cpu_register[read_addr2];
 
+        end
+        else begin
+            
+            read_data1 = '0;
+            read_data2 = '0;
         end
 
     end

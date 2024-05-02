@@ -1,9 +1,12 @@
-module ALU(
-    input  [n:0]  sel,
-    input  [4:0]  shift_amt
-    input  [31:0] data_in_a,
-    input  [31:0] data_in_b,
-    output logic [31:0] data_out
+module ALU #(parameter SEL_SIZE = 5;
+             parameter SHIFT_SIZE = 5;
+             parameter XLEN = 32;)
+(
+    input  [SEL_SIZE - 1:0]  sel,
+    input  [SHIFT_SIZE:0]  shift_amt
+    input  [RV32I - 1:0] data_in_a,
+    input  [RV32I - 1:0] data_in_b,
+    output logic [RV32I - 1:0] data_out
     );
 endmodule
 
@@ -27,20 +30,28 @@ always_comb begin
         SLT: begin
 
             if (data_in_a < data_in_b) begin
+
                 data_out = 1;
+
             end
             else begin 
+
                 data_out = 0;
+
             end
 
         end
 
         SLTU: begin
              if (unsigned(data_in_a) < unsigned(data_in_b)) begin
+
                 data_out = 1;
+
             end
             else begin 
+
                 data_out = 0;
+                
             end
         end
         
