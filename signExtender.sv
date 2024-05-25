@@ -11,7 +11,7 @@ logic [RV32I - 1:0] extended_data;
 
         if (enable) begin
 
-        extended_data = {(RV32I - INPUT_SIZE){data_in[INPUT_SIZE - 1]}, data_in};
+            extended_data = {(RV32I - INPUT_SIZE){data_in[INPUT_SIZE - 1]}, data_in};
 
         end
         else begin

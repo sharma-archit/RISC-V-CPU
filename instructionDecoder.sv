@@ -1,5 +1,6 @@
-module instructionDecoder (
-    input logic [31:0] instruction_decoder,
+module instructionDecoder #(parameter XLEN=32;)
+(
+    input logic [XLEN-1:0] instruction,
     output 
 ); 
 
@@ -18,18 +19,42 @@ module instructionDecoder (
 `define IRRO   7'b0110011
 `define ECB    7'b1110011
 
+enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC, LOAD, STORE} ALU_OP;
+
+wire register_source_2_data;
 
 always_comb begin
 
 // decode each instruction
-case (instruction_decoder[6:0])
+case (instruction[6:0])
     LUI: begin
+
+        alu_enable = 0;
+        alu_sel = LUI;
+        alu_shift_amt = '0;
+        alu_data_in_a = instruction[31:12];
+        alu_data_in_b = register_source_2_data;
         
-        immediate_decoder = instruction_decoder[31:12]
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:0];
-        fill_zero_decoder = 1;
-        memory_input_decoder = 1;
+        jbl_operation = '0;
+        jbl_offset = '0;
+        jbl_jal_offset = '0;
+        jbl_data_in1 = '0;
+        jbl_data_in2 = '0;
+        jbl_address_in = '0;
+
+        ls_load_enable = 0;
+        ls_store_enable = 0;
+        ls_base_addr = '0;
+        ls_offset = 0;
+        ls_width = 0;
+        ls_data_in_memory = 0;
+        ls_data_in_register = 0;
+        ls_target_addr = 0;
+
+
+        rf_write_enable = 1;
+        rf_write_addr = instruction[11:7]; //which CPU reg to write to
+        //rf_write_data = ; rf write data to be computed in the execute cycle
         
     end
 
@@ -68,7 +93,6 @@ case (instruction_decoder[6:0])
     end
 
     FENCE: begin
-
     end
 
     BRANCH: begin

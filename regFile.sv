@@ -3,13 +3,13 @@ module reg_file #(parameter ADDR_SIZE = 6;
 (
     input clk,
     input rst,
-    input write_en,
-    input read_en1,
-    input read_en2,
+    input write_enable,
+    input read_enable1,
+    input read_enable2,
     input [ADDR_SIZE - 1:0] read_addr1,
     input [ADDR_SIZE - 1:0] read_addr2,
     input [ADDR_SIZE - 1:0] write_addr,
-    input [XLEN - 1:0] write_data,
+    input [XLEN - 1:0]      write_data,
     output logic [XLEN - 1:0] read_data1,
     output logic [XLEN - 1:0] read_data2,
 );
@@ -36,17 +36,17 @@ always_ff @(posedge clk) begin
     //Check if read or write action
     else if (rst == 0) begin
 
-        if (write_en) begin 
+        if (write_enable) begin 
 
             cpu_register[write_addr] <= write_data;
 
         end
-        if (read_en1) begin 
+        if (read_enable1) begin 
 
             read_data1 <= cpu_register[read_addr1];
 
         end
-        if (read_en2) begin 
+        if (read_enable2) begin 
 
             read_data2 <= cpu_register[read_addr2];
 

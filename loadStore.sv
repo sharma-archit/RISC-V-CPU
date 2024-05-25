@@ -11,14 +11,14 @@ module loadStore #(parameter OFFSET_SIZE = 12;
     input [XLEN - 1:0] data_in_register,        // data read from register file
     output logic [XLEN - 1:0] target_addr,
     output logic [XLEN - 1:0] data_out_memory,  // data to store into data memory
-    output logic [XLEN - 1:0] data_out_register // data to load into register file
+    output logic [XLEN - 1:0] data_out_register // data to load from data memory into register file
 );
 
 enum {WORD, HALFWORD, BYTE, BYTE_UNSIGNED, HALFWORD_UNSIGNED} SIZE;
 
 always_comb begin
 
-    target_addr = base_addr + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset};
+    //target_addr = base_addr + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}; DO THIS IN ALU 
 
     if (load_enable) begin
 
