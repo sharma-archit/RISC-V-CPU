@@ -12,7 +12,6 @@ module jumpBranchLogic #(parameter OFFSET_SIZE = 12;
     output[XLEN - 1:0] address_out
 );
 
-localparam PC_INCREMENT = 4;
 logic [11:0] JALR_offset;
 enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
@@ -25,13 +24,13 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             
             JAL: begin
                 
-                address_out = address_in + {((XLEN - 1) - JAL_OFFSET_SIZE){jal_offset[JAL_OFFSET_SIZE - 1]}, jal_offset} + PC_INCREMENT;
+                address_out = address_in + {(XLEN - JAL_OFFSET_SIZE){jal_offset[JAL_OFFSET_SIZE - 1]}, jal_offset};
 
             end
 
             JALR: begin
 
-                address_out =  address_in + {((XLEN - 1) - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset} + PC_INCREMENT;
+                address_out =  address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset};
                 
             end
 

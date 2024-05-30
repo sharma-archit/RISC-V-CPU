@@ -7,9 +7,7 @@ module ALU #(parameter SEL_SIZE = 4;
     input  [SHIFT_SIZE:0]  shift_amt,
     input  [XLEN - 1:0] data_in_a,
     input  [XLEN - 1:0] data_in_b,
-    output logic [XLEN - 1:0] data_out
-    output target_addr;
-    
+    output logic [XLEN - 1:0] data_out    
     );
 
 enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC, LOAD, STORE} ALU_OP;
@@ -120,7 +118,7 @@ if (enable) begin
 
 end else begin
     
-    data_out = '0;;
+    data_out = '0;
 
 end
 

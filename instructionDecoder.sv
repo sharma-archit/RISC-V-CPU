@@ -20,75 +20,101 @@ module instructionDecoder #(parameter XLEN=32;)
 `define ECB    7'b1110011
 
 enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC, LOAD, STORE} ALU_OP;
+enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
 wire register_source_2_data;
+wire register_write_data;
+wire computed_PC
 
 always_comb begin
+
+    // initialize all control signals to 0
+    alu_enable = 0;
+    alu_sel = 0;
+    alu_shift_amt = '0;
+    alu_data_in_a = '0;
+    alu_data_in_b = '0;
+    
+    jbl_operation = '0;
+    jbl_offset = '0;
+    jbl_jal_offset = '0;
+    jbl_data_in1 = '0;
+    jbl_data_in2 = '0;
+    jbl_address_in = '0;
+
+    ls_load_enable = 0;
+    ls_store_enable = 0;
+    ls_base_addr = '0;
+    ls_offset = 0;
+    ls_width = 0;
+    ls_data_in_memory = 0;
+    ls_data_in_register = 0;
+    ls_target_addr = 0;
+
+    rf_read_enable1 = '0;
+    rf_read_enable2 = '0;
+    rf_read_addr1 = '0;
+    rf_read_addr2 = '0;
+    
+    rf_write_enable = 0;
+    rf_write_addr = '0;
+    rf_write_data = '0;
 
 // decode each instruction
 case (instruction[6:0])
     LUI: begin
 
-        alu_enable = 0;
+        alu_enable = 1;
         alu_sel = LUI;
-        alu_shift_amt = '0;
         alu_data_in_a = instruction[31:12];
         alu_data_in_b = register_source_2_data;
         
-        jbl_operation = '0;
-        jbl_offset = '0;
-        jbl_jal_offset = '0;
-        jbl_data_in1 = '0;
-        jbl_data_in2 = '0;
-        jbl_address_in = '0;
-
-        ls_load_enable = 0;
-        ls_store_enable = 0;
-        ls_base_addr = '0;
-        ls_offset = 0;
-        ls_width = 0;
-        ls_data_in_memory = 0;
-        ls_data_in_register = 0;
-        ls_target_addr = 0;
-
-
         rf_write_enable = 1;
         rf_write_addr = instruction[11:7]; //which CPU reg to write to
-        //rf_write_data = ; rf write data to be computed in the execute cycle
+        rf_write_data = alu_data_out; //rf write data to be computed in the execute cycle
         
     end
 
     AUIPC: begin
         
-        immediate_decoder = instruction_decoder[31:12]
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:0];
-        fill_zero_decoder = 1;
-        memory_input_decoder = 1;
-        pc_decoder = pc_input_decoder;
+        alu_enable = 1;
+        alu_sel = AUIPC;
+        alu_shift_amt = '0;
+        alu_data_in_a = instruction[31:12];
+        alu_data_in_b = PC; //Make sure PC value is the value to the AUIPC instruction
+
+        rf_write_enable = 1;
+        rf_write_addr = instruction[11:7]; //which CPU reg to write to
+        rf_write_data = alu_data_out; //rf write data to be computed in the execute cycle
 
     end
 
     JAL: begin
         
-        immediate_decoder = instruction_decoder[31:12];
-        sign_extend_decoder = 1;
-        pc_decoder = pc_input_decoder;
-        control_transfer_adder_decoder = 1;
-        reg_address_decoder = instruction_decoder[11:7];
+        jbl_operation = JAL;
+        jbl_jal_offset = {instruction[31], instruction[19:12], instruction[20], instruction[30:21]};
+        jbl_address_in = PC; //Make sure the PC value is the value of the JAL instruction
+        computed_PC = jbl_address_out;
+
+        rf_write_enable = 1;
+        rf_write_addr = instruction[11:7];
+        rf_write_data = PC + 4;
 
     end
 
     JALR: begin
+        
+        jbl_operation = JAL;
+        jbl_offset = instruction[31:20];
+        jbl_address_in = rf_read_data1;
+        computed_PC = jbl_address_out;
 
-        immediate_decoder = instruction_decoder[20:31];
-        reg_read1_enable_decoder = 1;
-        reg_read1_address_decoder = instruction_decoder[19:15];
-        sign_extend_decoder = 1;
-        control_transfer_adder_decoder = 1;
-        pc_decoder = pc_input_decoder;
-        reg_write_enable_decoder = 1;
-        reg_write_address_decoder = instruction_decoder[11:7];
+        // read register rs1, write PC+4 to register rd
+        rf_read_enable1 = 1;
+        rf_read_addr1 = instruction[19:15];
+        rf_write_enable = 1;
+        rf_write_addr = instruction[11:7];
+        rf_write_data = PC + 4;
 
     end
 
