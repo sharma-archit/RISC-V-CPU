@@ -24,11 +24,11 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
 wire register_source_2_data;
 wire register_write_data;
-wire computed_PC
+wire computed_PC;
 
 always_comb begin
 
-    // initialize all control signals to 0
+    // default all control signals to 0
     alu_enable = 0;
     alu_sel = 0;
     alu_shift_amt = '0;
@@ -59,6 +59,15 @@ always_comb begin
     rf_write_enable = 0;
     rf_write_addr = '0;
     rf_write_data = '0;
+    
+    dm_read_enable = '0;
+    dm_write_enable = '0;
+    dm_read_addr = '0;
+    dm_write_addr = '0;
+    dm_write_data = '0;
+
+    im_addr = '0;
+
 
 // decode each instruction
 case (instruction[6:0])
@@ -104,7 +113,7 @@ case (instruction[6:0])
 
     JALR: begin
         
-        jbl_operation = JAL;
+        jbl_operation = JALR;
         jbl_offset = instruction[31:20];
         jbl_address_in = rf_read_data1;
         computed_PC = jbl_address_out;
@@ -202,108 +211,148 @@ case (instruction[6:0])
         end
     end
     
-    LOADS: begin
+    LOAD: begin
         if (instruction_decoder[14:12] == 3'b000) begin : LB
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_write_enable_decoder = 1;
-            data_memory_read_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
-            data_memory_bit_length = 0;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:20]}; // target address offset
+            alu_data_in_b = rf_read_data1; //target base address
+            
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:5]; // address of cpu register holding base address
+            
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7]; //address of destination cpu register to load data into
+            rf_write_data = { {(32-8){dm_read_data[7]}}, dm_read_data[7:0]};
+            
+            dm_read_enable = 1;
+            dm_read_addr = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001) begin : LH
 
-            immediate_decoder = instruction_decoder[31:20];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_write_enable_decoder = 1;
-            data_memory_read_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
-            data_memory_bit_length = 1;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:20]}; // target address offset
+            alu_data_in_b = rf_read_data1; //target base address
+            
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:5]; // address of cpu register holding base address
+            
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7]; //address of destination cpu register to load data into
+            rf_write_data = { {(32-16){dm_read_data[15]}}, dm_read_data[15:0]}; // sign extended data from memory
+            
+            dm_read_enable = 1;
+            dm_read_addr = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b010) begin : LW
 
-            immediate_decoder = instruction_decoder[31:20];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_write_enable_decoder = 1;
-            data_memory_read_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
-            data_memory_bit_length = 2;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:20]}; // target address offset
+            alu_data_in_b = rf_read_data1; //target base address
+            
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:5]; // address of cpu register holding base address
+            
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7]; //address of destination cpu register to load data into
+            rf_write_data = dm_read_data;
+            
+            dm_read_enable = 1;
+            dm_read_addr = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b100) begin : LBU
 
-            immediate_decoder = instruction_decoder[31:20];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_write_enable_decoder = 1;
-            data_memory_read_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
-            data_memory_bit_length = 3;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:20]}; // target address offset
+            alu_data_in_b = rf_read_data1; //target base address
+            
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:5]; // address of cpu register holding base address
+            
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7]; //address of destination cpu register to load data into
+            rf_write_data = { {(32-8){0}}, dm_read_data[7:0]}; //zero extended data from memory
+            
+            dm_read_enable = 1;
+            dm_read_addr = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b101) begin : LHU
 
-            immediate_decoder = instruction_decoder[31:20];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_write_enable_decoder = 1;
-            data_memory_read_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
-            data_memory_bit_length = 4;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:20]}; // target address offset
+            alu_data_in_b = rf_read_data1; //target base address
+            
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:5]; // address of cpu register holding base address
+            
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7]; //address of destination cpu register to load data into
+            rf_write_data = {{(32-16){0}}, dm_read_data[15:0]}; //zero extended data from memory
+            
+            dm_read_enable = 1;
+            dm_read_addr = alu_data_out;
 
         end
     end
 
     STORE: begin
         if (instruction_decoder[14:12] == 3'b000) begin : SB
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:25], instruction[11:7]}; // target address offset 
+            alu_data_in_b = rf_read_data1; // target base address
 
-            immediate_decoder = instruction_decoder[31:25];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[11:7];
-            data_memory_input_decoder = 1
-            data_memory_write_enable_decoder = 1;
-            data_memory_bit_length = 0;
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15]; // cpu register where target base addr is stored
+            rf_read_addr2 = instruction[24:20]; // data value to store into data memory
+
+            dm_write_enable = 1;
+            dm_write_addr = alu_data_out;
+            dm_write_data = {{(32-8){rf_read_data2[7]}, rf_read_data2[7:0]}; // data byte sign extended to 32 bits
 
         end
         if (instruction_decoder[14:12] == 3'b001) begin : SH
 
-            immediate_decoder = instruction_decoder[31:25];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[11:7];
-            data_memory_input_decoder = 1
-            data_memory_write_enable_decoder = 1;
-            data_memory_bit_length = 1;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:25], instruction[11:7]};
+            alu_data_in_b = rf_read_data1;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            dm_write_enable = 1;
+            dm_write_addr = alu_data_out;
+            dm_write_data = {{(32-16){rf_read_data2[15]}}, rf_read_data2[15:0]};
 
         end
         if (instruction_decoder[14:12] == 3'b010) begin : SW
 
-            immediate_decoder = instruction_decoder[31:25];
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[11:7];
-            data_memory_input_decoder = 1
-            data_memory_write_enable_decoder = 1;
-            data_memory_bit_length = 2;
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:25], instruction[11:7]};
+            alu_data_in_b = rf_read_data1;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            dm_write_enable = 1;
+            dm_write_addr = alu_data_out;
+            dm_write_data = rf_read_data2;
 
         end
     end
@@ -311,102 +360,136 @@ case (instruction[6:0])
     IRII: begin 
         if (instruction_decoder[14:12] == 3'b000) begin : ADDI
 
-            immediate_decoder = instruction_decoder[31:20];
-            
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b000;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = {{(32 - 12){instruction[32 - 1]}}, instruction[31:20]}; //Sign extended immediate value
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
             
         end
         if (instruction_decoder[14:12] == 3'b010) begin : SLTI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b010;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SLT;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = {{(32 - 12){instruction[32 - 1]}}, instruction[31:20]}; //Sign extended immediate value
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b011) begin : SLTIU
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b011;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SLTU;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = {{(32 - 12){instruction[32 - 1]}}, instruction[31:20]}; //Sign extended immediate value
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b100) begin : XORI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b100;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = XOR;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = {{(32 - 12){instruction[32 - 1]}}, instruction[31:20]}; //Sign extended immediate value
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b110) begin : ORI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b110;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = OR;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = {{(32 - 12){instruction[32 - 1]}}, instruction[31:20]}; //Sign extended immediate value
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b111) begin : ANDI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b111;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = AND;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = {{(32 - 12){instruction[32 - 1]}}, instruction[31:20]}; //Sign extended immediate value
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 & instruction_decoder[31:25] == 7'b0000000) begin : SLLI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b001;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SLL;
+            alu_shift_amt = instruction[24:20];
+            alu_data_in_a = rf_read_data1;
 
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
         end
         if (instruction_decoder[14:12] == 3'b101 & instruction_decoder[31:25] == 7'b0000000) begin : SRLI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b101;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SRL;
+            alu_shift_amt = instruction[24:20];
+            alu_data_in_a = rf_read_data1;
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b101 & instruction_decoder[31:25] == 7'b0100000) begin : SRAI
 
-            immediate_decoder = instruction_decoder[31:20];
-            sign_extend_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            alu_function_decoder = 3'b001;
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SRA;
+            alu_shift_amt = instruction[24:20];
+            alu_data_in_a = rf_read_data1;
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = instruction[19:15];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
     end
@@ -415,112 +498,170 @@ case (instruction[6:0])
         
         if (instruction_decoder[14:12] == 3'b000 && instruction_decoder[31:25] == 7'b0000000) begin : ADD
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = XOR;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b000 && instruction_decoder[31:25] == 7'b0100000) begin : SUB
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SUB;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SLL
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SLL;
+            alu_shift_amt = rf_read_data2[4:0];
+            alu_data_in_a = rf_read_data1;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SLT
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SLT;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SLTU
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SLTU;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : XOR
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = XOR;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : SRL
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SRL;
+            alu_shift_amt = rf_read_data2[4:0];
+            alu_data_in_a = rf_read_data1;
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0100000) begin : SRA
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = SRA;
+            alu_shift_amt = rf_read_data2[4:0];
+            alu_data_in_a = rf_read_data1;
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : OR
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = OR;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
         if (instruction_decoder[14:12] == 3'b001 && instruction_decoder[31:25] == 7'b0000000) begin : AND
 
-            reg_read1_enable_decoder = 1;
-            reg_read2_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            alu_function_decoder = instruction_decoder[14:12];
-            reg_write_enable_decoder = 1;
-            reg_write_address_decoder = instruction_decoder[11:7];
+            alu_enable = 1;
+            alu_sel = ADD;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = rf_read_data2;
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
+            rf_write_enable = 1;
+            rf_write_addr = instruction[11:7];
+            rf_write_data = alu_data_out;
 
         end
 
@@ -535,7 +676,7 @@ case (instruction[6:0])
     end
     
     default: 
-    // check if riscv requires us to raise an exception if invalid instruction 
+    // check if riscv requires us to raise an exception if invalid instruction
 endcase
 
 end

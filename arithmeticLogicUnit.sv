@@ -10,7 +10,7 @@ module ALU #(parameter SEL_SIZE = 4;
     output logic [XLEN - 1:0] data_out    
     );
 
-enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC, LOAD, STORE} ALU_OP;
+enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC} ALU_OP;
 
 always_comb begin
 
@@ -104,12 +104,6 @@ if (enable) begin
         AUIPC: begin
 
             data_out = {data_in_a[19:0], 12'd0} + data_in_b; // data_in_a = 20 bit u-immediate, data_in_b = 32-bit addr of AUIPC instruction
-
-        end
-
-        LOAD | STORE: begin
-
-            data_out = data_in_a + {(20){data_in_b[12 - 1]}, data_in_b}; // data_in_a = base address, data_in_b = 12 bit offset, data_out = target address
 
         end
 
