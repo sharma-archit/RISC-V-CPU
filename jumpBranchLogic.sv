@@ -24,13 +24,13 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             
             JAL: begin
                 
-                address_out = address_in + {(XLEN - JAL_OFFSET_SIZE){jal_offset[JAL_OFFSET_SIZE - 1]}, jal_offset};
+                address_out = address_in + {{(XLEN - JAL_OFFSET_SIZE){jal_offset[JAL_OFFSET_SIZE - 1]}}, jal_offset};
 
             end
 
             JALR: begin
 
-                address_out =  address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset};
+                address_out =  address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
                 
             end
 
@@ -38,7 +38,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
                 if (data_in1 == data_in2) begin
                     
-                    address_out = address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
                     
                 end
                 else begin
@@ -52,7 +52,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             BNE: begin
                 if (data_in1 != data_in2) begin 
 
-                    address_out = address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
 
                 end
                 else begin
@@ -66,7 +66,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             BLT: begin
                 if (data_in1 < data_in2) begin    
 
-                    address_out = address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
 
                 end
                 else begin
@@ -81,7 +81,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
                 
                 if (unsigned(data_in1) >= unsigned(data_in2)) begin  
 
-                    address_out = address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
 
                 end
                 else begin
@@ -96,7 +96,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
                 if (unsigned(data_in1) < unsigned(data_in2)) begin
 
-                    address_out = address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
 
                 end
                 else begin
@@ -112,7 +112,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
                 if (unsigned(data_in1) >= unsigned(data_in2)) begin
 
-                    address_out = address_in + {(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
 
                 end
                 else begin

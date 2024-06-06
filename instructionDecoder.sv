@@ -131,82 +131,46 @@ case (instruction[6:0])
     end
 
     BRANCH: begin
+
+            jbl_offset = {instruction[31], instruction[7], instruction[30:25], instruction[11:8]}; //Reordered immediate value
+            jbl_data_in1 = rf_read_data1;
+            jbl_data_in2 = rf_read_data2;
+            jbl_address_in = PC; //PC value of the branch instruction being decoded
+            computed_PC = jbl_address_out //New PC value to branch to
+
+            rf_read_enable1 = 1;
+            rf_read_enable2 = 1;
+            rf_read_addr1 = instruction[19:15];
+            rf_read_addr2 = instruction[24:20];
+
         if (instruction_decoder[14:12] == 3'b000) begin : BEQ
         
-            immediate_decoder = {instruction_decoder[31:25], instruction_decoder[11:7]};
-            sign_extend_decoder = 1;
-            pc_decoder = pc_input_decoder;
-            control_transfer_adder_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            constrol_transfer_comparator_decoder = 1;
+            jbl_operation = BEQ;
 
         end
         if (instruction_decoder[14:12] == 3'b001) begin : BNE
 
-            immediate_decoder = {instruction_decoder[31:25], instruction_decoder[11:7]};
-            sign_extend_decoder = 1;
-            pc_decoder = pc_input_decoder;
-            control_transfer_adder_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            constrol_transfer_comparator_decoder = 2;
+            jbl_operation = BNE;
 
         end
         if (instruction_decoder[14:12] == 3'b100) begin : BLT
 
-            immediate_decoder = {instruction_decoder[31:25], instruction_decoder[11:7]};
-            sign_extend_decoder = 1;
-            pc_decoder = pc_input_decoder;
-            control_transfer_adder_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            constrol_transfer_comparator_decoder = 3;
+            jbl_operation = BLT;
 
         end
         if (instruction_decoder[14:12] == 3'b101) begin : BGE
 
-            immediate_decoder = {instruction_decoder[31:25], instruction_decoder[11:7]};
-            sign_extend_decoder = 1;
-            pc_decoder = pc_input_decoder;
-            control_transfer_adder_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            constrol_transfer_comparator_decoder = 4;
+            jbl_operation = BGE;
 
         end
         if (instruction_decoder[14:12] == 3'b110) begin : BLTU
 
-            immediate_decoder = {instruction_decoder[31:25], instruction_decoder[11:7]};
-            sign_extend_decoder = 1;
-            pc_decoder = pc_input_decoder;
-            control_transfer_adder_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            constrol_transfer_comparator_decoder = 5;
+            jbl_operation = BLTU;
 
         end
         if (instruction_decoder[14:12] == 3'b111) begin : BGEU
 
-            immediate_decoder = {instruction_decoder[31:25], instruction_decoder[11:7]};
-            sign_extend_decoder = 1;
-            pc_decoder = pc_input_decoder;
-            control_transfer_adder_decoder = 1;
-            reg_read1_enable_decoder = 1;
-            reg_read1_address_decoder = instruction_decoder[19:15];
-            reg_read2_enable_decoder = 1;
-            reg_read2_address_decoder = instruction_decoder[24:20];
-            constrol_transfer_comparator_decoder = 6;
+            jbl_operation = BGEU;
 
         end
     end
