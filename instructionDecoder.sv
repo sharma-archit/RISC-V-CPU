@@ -12,9 +12,12 @@ module instructionDecoder #(parameter XLEN=32;
                             parameter IRII_IMMEDIATE = 12;
                             parameter SHIFT_AMOUNT = 5;
                             parameter FUNCT3 = 15;
-                            parameter FUNCT3_SIZE = 3;)
+                            parameter FUNCT3_SIZE = 3;
+                            parameter FUNCT12 = 12;)
 (
-    input logic [XLEN-1:0] instruction,
+    input logic [XLEN - 1:0] instruction,
+    input logic [XLEN - 1:0] PC,
+    output logic [XLEN - 1:0] computed_PC
 ); 
 
 // 7-bit opcodes //
@@ -34,10 +37,6 @@ module instructionDecoder #(parameter XLEN=32;
 
 enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC, LOAD, STORE} ALU_OP;
 enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
-
-wire register_source_2_data;
-wire register_write_data;
-wire computed_PC;
 
 always_comb begin
 
@@ -425,9 +424,9 @@ case (instruction[6:0])
     
     ECB: begin
         
-        if(instruction[31:20] == 12'b000000000000) begin : ECALL
+        if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000000) begin : ECALL
         end
-        if(instruction[31:20] == 12'b000000000001) begin : EBREAK
+        if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000001) begin : EBREAK
         end
     end
     
