@@ -1,4 +1,4 @@
-module reg_file #(parameter ADDR_SIZE = 6;
+module regFile #(parameter ADDR_SIZE = 6;
                   parameter XLEN = 32;)
 (
     input clk,
@@ -11,7 +11,7 @@ module reg_file #(parameter ADDR_SIZE = 6;
     input [ADDR_SIZE - 1:0] write_addr,
     input [XLEN - 1:0]      write_data,
     output logic [XLEN - 1:0] read_data1,
-    output logic [XLEN - 1:0] read_data2,
+    output logic [XLEN - 1:0] read_data2
 );
 
 //Register data storage
@@ -40,7 +40,7 @@ always_ff @(posedge clk) begin
 
         if (write_enable) begin
             
-            if (write_addr != 0) begin // register x0 can not be overwritten
+            if (write_addr != 0) begin // register x0 can not be written to
                 cpu_register[write_addr] <= write_data;
             end
 

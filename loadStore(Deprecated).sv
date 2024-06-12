@@ -68,7 +68,6 @@ always_comb begin
         data_out_register = '0;
 
     end
-    
     if (store_enable) begin
         
         case (width)

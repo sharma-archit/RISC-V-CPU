@@ -1,10 +1,10 @@
-module ALU #(parameter SEL_SIZE = 4;
+module arithmeticLogicUnit #(parameter SEL_SIZE = 4;
              parameter SHIFT_SIZE = 5;
              parameter XLEN = 32;)
 (
-    input  enable;
+    input  enable,
     input  [SEL_SIZE - 1:0]  sel,
-    input  [SHIFT_SIZE:0]  shift_amt,
+    input  [SHIFT_SIZE - 1:0]  shift_amt,
     input  [XLEN - 1:0] data_in_a,
     input  [XLEN - 1:0] data_in_b,
     output logic [XLEN - 1:0] data_out    
