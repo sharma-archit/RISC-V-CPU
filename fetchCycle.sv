@@ -7,8 +7,9 @@ module moduleName #(parameter XLEN = 32;)
 
 assign PC_out = PC_in;
 
-instructionMemory instruction_memory (.addr(PC_in),
-                             .instruction(instruction)
+instructionMemory instruction_memory (
+    .addr(PC_in),
+    .instruction(instruction)
                              );
 
 endmodule

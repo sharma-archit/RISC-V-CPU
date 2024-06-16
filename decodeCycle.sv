@@ -1,5 +1,5 @@
 module decodeCycle #(
-    parameters = XLEN = 32;
+    parameter = XLEN = 32;
     parameter ALU_SEL_SIZE = 4;
     parameter SHIFT_SIZE = 5;
     parameter FUNCT3_SIZE = 3;
@@ -33,8 +33,6 @@ module decodeCycle #(
     
     output logic dm_read_enable,
     output logic dm_write_enable,
-    output logic [XLEN-1:0] dm_read_addr,
-    output logic [XLEN-1:0] dm_write_addr,
     output logic [XLEN-1:0] dm_write_data, 
     output logic [2:0] dm_load_type
 );

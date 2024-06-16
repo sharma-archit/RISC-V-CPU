@@ -4,7 +4,7 @@ module writeBackCycle #(
     input [1:0] writeback_data_sel,
     output [XLEN-1:0] writeback_data,
     input [XLEN-1:0] alu_data_out,
-    input [XLEN-1:0] writeback_PC,
+    input [XLEN-1:0] PC_in,
     input [XLEN-1:0] dm_read_data
 );
 
@@ -24,7 +24,7 @@ module writeBackCycle #(
     end
     else if (writeback_data_sel == PC) begin
 
-        writeback_data = writeback_PC + 4;
+        writeback_data = PC_in + 4;
         
     end
 endmodule

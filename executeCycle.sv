@@ -10,14 +10,6 @@ module executeCycle #(
     input  [XLEN - 1:0] alu_data_in_b,
     output logic [XLEN - 1:0] alu_data_out
 );
-
-
-logic [4:0][signalsize-1:0] signalx_d;
-{FETCH, DECODE, execute, MEM, WRTIEBACK}
-signalx_fetch
-signalx_decode;
-
-signalx_d[EXECUTE];
     
     arithmeticLogicUnit ALU (
         .enable(alu_enable),
