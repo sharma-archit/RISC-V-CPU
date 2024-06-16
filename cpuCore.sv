@@ -3,7 +3,8 @@ module cpuCore #() (
     input rst
 );
 
-enum {FETCH, DECODE, EXECUTE, MEMORY_ACCESS, WRITEBACK} CPU_PIPELINE_STAGES;
+enum logic [2:0] {FETCH, DECODE, EXECUTE, MEMORY_ACCESS, WRITEBACK} CPU_PIPELINE_STAGES;
+enum logic {A,B};
 
 logic [DECODE:0]    [] instruction, instruction_d;
 logic [WRITEBACK:0] [] PC_in, PC_in_d;
@@ -31,6 +32,10 @@ logic [MEMORYACCESS:0] [] dm_load_type, dm_load_type_d;
 logic [WRITEBACK:0]    [] dm_read_data, dm_read_data_d;
 logic [MEMORYACCESS:0] [] dm_data_bypass, dm_data_bypass_d;
 
+logic f_to_d_enable_ff, f_to_d_enable_ff_prev;
+logic d_to_e_enable_ff, d_to_e_enable_ff_prev;
+
+
 /////////////// Fetch Cycle ///////////////
 
 fetchCycle temp (
@@ -42,9 +47,16 @@ fetchCycle temp (
 // Fetch -> Decode Flop
 always_ff @(posedge(clk)) begin : fetch_to_decode_ff
 
-    PC_in_d[DECODE] <= PC_in[FETCH];
-    PC_out_d[DECODE] <= PC_out[FETCH];
-    instruction_d[DECODE] <= instruction[FETCH];
+    f_to_d_enable_ff_prev <= f_to_d_enable_ff;
+
+    // stall decode stage if f_to_d_enable_ff is deasserted and it was asserted the previous cycle
+    if (f_to_d_enable_ff || !f_to_d_enable_ff_prev) begin
+        
+        PC_in_d[DECODE] <= PC_in[FETCH];
+        PC_out_d[DECODE] <= PC_out[FETCH];
+        instruction_d[DECODE] <= instruction[FETCH];
+
+    end
 
 end : fetch_to_decode_ff
 
@@ -55,11 +67,15 @@ decodeCycle temp (
     .PC_in(PC_in_d[DECODE]),
     .PC_out(PC_out[DECODE]),
 
+    .f_to_d_enable_ff(f_to_d_enable_ff),
+    .d_to_e_enable_ff(d_to_e_enable_ff),
+    .pipeline_forward_sel(pipeline_forward_sel),
+
     .alu_enable(alu_enable[DECODE]),
     .alu_sel(alu_sel[DECODE]),
     .alu_shift_amt(alu_shift_amt[DECODE]),
-    .alu_data_in_a(alu_data_in_a[DECODE]),
-    .alu_data_in_b(alu_data_in_b[DECODE]),
+    .dec_alu_data_in_a(dec_alu_data_in_a[DECODE]),
+    .dec_alu_data_in_b(dec_alu_data_in_b[DECODE]),
 
     // rf_writeback input signals passed directly from writeback stage to decode stage
     .rf_writeback_enable(rf_write_enable_d[WRITEBACK]),
@@ -76,26 +92,63 @@ decodeCycle temp (
     .dm_load_type(dm_load_type[DECODE])
 );
 
+always_comb begin : pipeline_data_forward_mux
+
+case (pipeline_forward_sel[A])
+
+    MEM_ACCESS_DM_OPERAND: alu_data_in_a[DECODE] = dm_read_data[MEMORY_ACCESS];
+
+    EXECUTE_ALU_OPERAND: alu_data_in_a[DECODE] = alu_data_out[EXECUTE];
+    
+    MEM_ACCESS_ALU_OPERAND: alu_data_in_a[DECODE] = dm_data_bypass[MEMORY_ACCESS];
+
+    default: alu_data_in_a[DECODE] = dec_alu_data_in_a[DECODE];
+    
+endcase
+
+case (pipeline_forward_sel[B])
+
+    MEM_ACCESS_DM_OPERAND: alu_data_in_b[DECODE] = dm_read_data[MEMORY_ACCESS];
+    
+    EXECUTE_ALU_OPERAND: alu_data_in_b[DECODE] = alu_data_out[EXECUTE];
+    
+    MEM_ACCESS_ALU_OPERAND: alu_data_in_b[DECODE] = dm_data_bypass[MEMORY_ACCESS];
+    
+    default: alu_data_in_b[DECODE] = dec_alu_data_in_b[DECODE];
+
+endcase
+
+end: pipeline_data_forward_mux
+
+
+
 // Decode -> Execute Flop
 always_ff @(posedge(clk)) begin : decode_to_execute_ff
-    
-    PC_in_d[EXECUTE] <= PC_in[DECODE];
-    PC_out_d[EXECUTE] <= PC_out[DECODE];
-    alu_enable_d[EXECUTE] <= alu_enable[DECODE];
-    alu_sel_d[EXECUTE] <= alu_sel[DECODE];
-    alu_shift_amt_d[EXECUTE] <= alu_shift_amt[DECODE];
-    alu_data_in_a_d[EXECUTE] <= alu_data_in_a[DECODE];
-    alu_data_in_b_d[EXECUTE] <= alu_data_in_b[DECODE];
 
-    rf_write_enable_d[EXECUTE] <= rf_write_enable[DECODE];
-    rf_write_addr_d[EXECUTE] <= rf_write_addr[DECODE];
-    rf_write_data_sel_d[EXECUTE] <= rf_write_data_sel[DECODE];
+    d_to_e_enable_ff_prev <= d_to_e_enable_ff;
 
-    dm_read_enable_d[EXECUTE] <= dm_read_enable[DECODE];
-    dm_write_enable_d[EXECUTE] <= dm_write_enable[DECODE];
-    dm_write_data_d[EXECUTE] <= dm_write_data[DECODE];
-    dm_load_type_d[EXECUTE] <= dm_load_type[DECODE];
-    dm_read_data_d[EXECUTE] <= dm_read_data[DECODE];
+    // stall execute stage if d_to_e_enable_ff is deasserted and it was asserted the previous cycle
+    if (d_to_e_enable_ff || !d_to_e_enable_ff_prev) begin
+
+        PC_in_d[EXECUTE] <= PC_in[DECODE];
+        PC_out_d[EXECUTE] <= PC_out[DECODE];
+        alu_enable_d[EXECUTE] <= alu_enable[DECODE];
+        alu_sel_d[EXECUTE] <= alu_sel[DECODE];
+        alu_shift_amt_d[EXECUTE] <= alu_shift_amt[DECODE];
+        alu_data_in_a_d[EXECUTE] <= alu_data_in_a[DECODE];
+        alu_data_in_b_d[EXECUTE] <= alu_data_in_b[DECODE];
+
+        rf_write_enable_d[EXECUTE] <= rf_write_enable[DECODE];
+        rf_write_addr_d[EXECUTE] <= rf_write_addr[DECODE];
+        rf_write_data_sel_d[EXECUTE] <= rf_write_data_sel[DECODE];
+
+        dm_read_enable_d[EXECUTE] <= dm_read_enable[DECODE];
+        dm_write_enable_d[EXECUTE] <= dm_write_enable[DECODE];
+        dm_write_data_d[EXECUTE] <= dm_write_data[DECODE];
+        dm_load_type_d[EXECUTE] <= dm_load_type[DECODE];
+        dm_read_data_d[EXECUTE] <= dm_read_data[DECODE];
+
+    end
     
 end : decode_to_execute_ff
 

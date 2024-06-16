@@ -1,6 +1,6 @@
 module instructionDecoder #(parameter XLEN = 32;
                             parameter UIMMEDIATE = 20; //bit location if there is uimmediate in the opcode
-                            parameter REGISTER_SIZE = 5; //bit size of register address in opcode
+                            parameter REGISTER_SIZE = 5; //bit size of register address in opcode = clog2(32)
                             parameter DESTINATION_REGISTER_LOC = 12; // bit location of destination register address in opcode
                             parameter ALU_SEL_SIZE = 4; //bit size of alu selection
                             parameter JALR_OFFSET_SIZE = 12; //bit size of jalr offset in opcode
@@ -19,11 +19,16 @@ module instructionDecoder #(parameter XLEN = 32;
     input logic [XLEN - 1:0] instruction,
     input logic [XLEN - 1:0] PC_in,
 
+    // destination and source registers of the current instruction
+    output logic [REGISTER_SIZE-1:0] destination_reg
+    output logic [REGISTER_SIZE-1:0] source_reg1,
+    output logic [REGISTER_SIZE-1:0] source_reg2,
+
     output logic alu_enable,
     output logic [ALU_SEL_SIZE - 1:0] alu_sel,
     output logic [SHIFT_SIZE - 1: 0] alu_shift_amt,
-    output logic [XLEN-1:0] alu_data_in_a,
-    output logic [XLEN-1:0] alu_data_in_b,
+    output logic [XLEN-1:0] dec_alu_data_in_a,
+    output logic [XLEN-1:0] dec_alu_data_in_b,
     
     output logic [FUNCT3_SIZE - 1:0] jbl_operation,
     output logic [JALR_OFFSET_SIZE - 1:0] jbl_offset,
@@ -47,6 +52,7 @@ module instructionDecoder #(parameter XLEN = 32;
     output logic dm_write_enable,
     output logic [XLEN-1:0] dm_write_data,
     output logic [2:0] dm_load_type
+
 ); 
 
 // 7-bit opcodes //
@@ -69,24 +75,14 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP_E;
 enum {LOAD_B, LOAD_H, LOAD_W, LOAD_BU, LOAD_HU} LOAD_OP_E; // to size load data in the mem_access cycle
 enum {ALU, DATA_MEM, PC} WRITEBACK_DATA_SEL_E; // to select the source of write data in the writeback cycle
 
-
-typedef struct packed {
-    logic [4:0] destination;
-    logic [4:0] source1;
-    logic [4:0] source2;  
-} instr_registers_t;
-
-// internally storing instruction opcode registers
-instr_registers_t [2:0] instr_reg_info;
-
 always_comb begin : decoder
 
     // default all control signals to 0
     alu_enable = 0;
     alu_sel = 0;
     alu_shift_amt = '0;
-    alu_data_in_a = '0;
-    alu_data_in_b = '0;
+    dec_alu_data_in_a = '0;
+    dec_alu_data_in_b = '0;
     
     jbl_operation = '0;
     jbl_offset = '0;
@@ -109,22 +105,22 @@ always_comb begin : decoder
     dm_write_data = '0;
     dm_load_type = '0;
 
-    // decode each instruction
+    // decode each instruction opcode
     case (instruction[6:0])
     
         LUI: begin
 
             alu_enable = 1;
             alu_sel = LUI;
-            alu_data_in_a = instruction[XLEN - 1:XLEN - UIMMEDIATE];
+            dec_alu_data_in_a = instruction[XLEN - 1:XLEN - UIMMEDIATE];
             
             rf_write_enable = 1;
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE]; //which CPU reg to write to
             rf_write_data_sel = ALU; //rf write data to be computed in the execute cycle
             
-            instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source1 = X;
-            instr_reg_info[0].source2 = X;
+            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = 'x;
+            source_reg2 = 'x;
             
         end
 
@@ -132,16 +128,16 @@ always_comb begin : decoder
             
             alu_enable = 1;
             alu_sel = AUIPC;
-            alu_data_in_a = instruction[XLEN - 1:XLEN - UIMMEDIATE];
-            alu_data_in_b = PC_in; //Make sure PC value is the value to the AUIPC instruction
+            dec_alu_data_in_a = instruction[XLEN - 1:XLEN - UIMMEDIATE];
+            dec_alu_data_in_b = PC_in; //Make sure PC value is the value to the AUIPC instruction
 
             rf_write_enable = 1;
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE]; //which CPU reg to write to
             rf_write_data_sel= ALU; //rf write data to be computed in the execute cycle
 
-            instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source1 = X;
-            instr_reg_info[0].source2 = X;
+            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = 'x;
+            source_reg2 = 'x;
 
         end
 
@@ -155,9 +151,9 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             rf_write_data_sel = PC; //current PC + 4;
 
-            instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source1 = X;
-            instr_reg_info[0].source2 = X;
+            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = 'x;
+            source_reg2 = 'x;
 
         end
 
@@ -174,9 +170,9 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             rf_write_data_sel = PC; //current PC + 4
 
-            instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source2 = X;
+            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+            source_reg2 = 'x;
 
         end
 
@@ -195,9 +191,9 @@ always_comb begin : decoder
             rf_read_addr1 = instruction[SOURCE_REGISTER1_LOC - 1:SOURCE_REGISTER1_LOC - REGISTER_SIZE];
             rf_read_addr2 = instruction[SOURCE_REGISTER2_LOC - 1:SOURCE_REGISTER2_LOC - REGISTER_SIZE];
 
-            instr_reg_info[0].destination = X;
-            instr_reg_info[0].source1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
+            destination_reg = 'x;
+            source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+            source_reg2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
 
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : BEQ
             
@@ -235,8 +231,8 @@ always_comb begin : decoder
 
                 alu_enable = 1;
                 alu_sel = ADD;
-                alu_data_in_a = {{(XLEN - LOAD_OFFSET){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - LOAD_OFFSET]}; // target address offset
-                alu_data_in_b = rf_read_data1; //target base address
+                dec_alu_data_in_a = {{(XLEN - LOAD_OFFSET){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - LOAD_OFFSET]}; // target address offset
+                dec_alu_data_in_b = rf_read_data1; //target base address
                 
                 rf_read_enable1 = 1;
                 rf_read_addr1 = instruction[SOURCE_REGISTER1_LOC:SOURCE_REGISTER1_LOC - REGISTER_SIZE]; // address of cpu register holding base address
@@ -248,9 +244,9 @@ always_comb begin : decoder
                 
                 rf_write_data_sel = DATA_MEM;
 
-                instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-                instr_reg_info[0].source1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-                instr_reg_info[0].source2 = X;
+                destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+                source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+                source_reg2 = 'x;
 
                 if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : LB
                     dm_load_type = LOAD_B;
@@ -274,8 +270,8 @@ always_comb begin : decoder
                 alu_enable = 1;
                 alu_sel = ADD;
 
-                alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:25], instruction[11:7]}; // target address offset 
-                alu_data_in_b = rf_read_data1; // target base address
+                dec_alu_data_in_a = {{(32-12){instruction[32-1]}}, instruction[31:25], instruction[11:7]}; // target address offset 
+                dec_alu_data_in_b = rf_read_data1; // target base address
 
                 rf_read_enable1 = 1;
                 rf_read_enable2 = 1;
@@ -284,9 +280,9 @@ always_comb begin : decoder
 
                 dm_write_enable = 1;
 
-                instr_reg_info[0].destination = X;
-                instr_reg_info[0].source1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-                instr_reg_info[0].source2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
+                destination_reg = 'x;
+                source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+                source_reg2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
 
                 if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : SB
                     dm_write_data = {{(XLEN - BYTE){rf_read_data2[BYTE - 1]}}, rf_read_data2[BYTE - 1:0]}; // data byte sign extended to 32 bits
@@ -312,70 +308,70 @@ always_comb begin : decoder
                 rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
                 rf_write_data = ALU;
 
-                instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-                instr_reg_info[0].source1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-                instr_reg_info[0].source2 = X;
+                destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+                source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+                source_reg2 = 'x;
 
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : ADDI
 
                 alu_sel = ADD;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b010) begin : SLTI
 
                 alu_sel = SLT;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b011) begin : SLTIU
 
                 alu_sel = SLTU;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b100) begin : XORI
 
                 alu_sel = XOR;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b110) begin : ORI
 
                 alu_sel = OR;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b111) begin : ANDI
 
                 alu_sel = AND;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = {{(XLEN - IRII_IMMEDIATE){instruction[XLEN - 1]}}, instruction[XLEN - 1:XLEN - IRII_IMMEDIATE]}; //Sign extended immediate value
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b001 & instruction[XLEN - 1:XLEN - 7] == 7'b0000000) begin : SLLI
 
                 alu_sel = SLL;
                 alu_shift_amt = instruction[XLEN - IRII_IMMEDIATE + SHIFT_SIZE - 1:XLEN - IRII_IMMEDIATE]; //Shift amount is lower 5 bits of immediate value
-                alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_a = rf_read_data1;
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b101 & instruction[XLEN - 1:XLEN - 7] == 7'b0000000) begin : SRLI
 
                 alu_sel = SRL;
                 alu_shift_amt = instruction[XLEN - IRII_IMMEDIATE + SHIFT_SIZE - 1:XLEN - IRII_IMMEDIATE];
-                alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_a = rf_read_data1;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b101 & instruction[XLEN - 1:XLEN - 7] == 7'b0100000) begin : SRAI
 
                 alu_sel = SRA;
                 alu_shift_amt = instruction[XLEN - IRII_IMMEDIATE + SHIFT_SIZE - 1:XLEN - IRII_IMMEDIATE];
-                alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_a = rf_read_data1;
 
             end
         end
@@ -393,78 +389,78 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             rf_write_data = ALU;
 
-            instr_reg_info[0].destination = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-            instr_reg_info[0].source2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
+            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+            source_reg2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
             
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000 && instruction[XLEN - 1:XLEN - 7] == 7'b0000000) begin : ADD
 
                 alu_sel = XOR;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000 && instruction[XLEN - 1:XLEN - 7] == 7'b0100000) begin : SUB
 
                 alu_sel = SUB;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b001) begin : SLL
 
                 alu_sel = SLL;
                 alu_shift_amt = rf_read_data2[4:0]; //Shift amount is lower 5 bits of register value
-                alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_a = rf_read_data1;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b010) begin : SLT
 
                 alu_sel = SLT;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b011) begin : SLTU
 
                 alu_sel = SLTU;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b100) begin : XOR
 
                 alu_sel = XOR;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b101 && instruction[XLEN - 1:XLEN - 7] == 7'b0000000) begin : SRL
 
                 alu_sel = SRL;
                 alu_shift_amt = rf_read_data2[4:0];
-                alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_a = rf_read_data1;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b101 && instruction[XLEN - 1:XLEN - 7] == 7'b0100000) begin : SRA
 
                 alu_sel = SRA;
                 alu_shift_amt = rf_read_data2[4:0];
-                alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_a = rf_read_data1;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b110) begin : OR
 
                 alu_sel = OR;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b111) begin : AND
 
                 alu_sel = ADD;
-                alu_data_in_a = rf_read_data1;
-                alu_data_in_b = rf_read_data2;
+                dec_alu_data_in_a = rf_read_data1;
+                dec_alu_data_in_b = rf_read_data2;
 
             end
 
@@ -478,50 +474,10 @@ always_comb begin : decoder
             end
         end
         
-        default: 
+        default:
         // check if riscv requires us to raise an exception if invalid instruction
     endcase
 
 end : decoder
-
-
-
-always_comb begin : pipeline_data_hazard_detection
-
-            // if a past instruction's destination reg is a source reg for the current instruction
-            if (instr_reg_info[i].destination == instr_reg_info[0].source1 || instr_reg_info[i].destination == instr_reg_info[0].source2) begin
-                
-                if (dm_read_enable) begin // if current instruction is a load NOT previous which is what we want
-
-                    if (i == 1) begin
-                        
-                        // order a stall since the previous load instruction must be in the memory access cycle to produce the operand that will be forwarded to the decode stage
-                        fetch2decode_flop_enable = '0;
-                        decode2execute_flop_enable = '0;
-                    end
-                    else if (i == 2) begin
-
-                        dm_operand_forward = 1;
-
-                    end
-                else if (i == 1) begin
-                    
-                    //forward alu_data_out from execute cycle to decode cycle
-                    alu_operand_forward = 1;
-                    
-                end
-                else begin
-                    
-                    //forward alu_data_out from memory access cycle to decode cycle
-                    mem_access_alu_operand_forward = 1;
-
-                end
-                   
-                end
-                    
-            end
-
-end : pipeline_data_hazard_detection
-
 
 endmodule
