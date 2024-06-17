@@ -41,7 +41,7 @@ module decodeCycle #(
     // pipeline hazard control signals
     output logic f_to_d_enable_ff, // fetch to decode ff enable
     output logic d_to_e_enable_ff, // decode to execute ff enable
-    output logic [1:0] [2:0] pipeline_forward_sel // to forward data via pipeline bypassing
+    output logic [1:0] [1:0] pipeline_forward_sel // to forward data via pipeline bypassing
 );
 
     // internal registers
@@ -66,17 +66,17 @@ module decodeCycle #(
     
 
 regFile register_file (
-        .clk(clk),
-        .rst(rst),
-        .write_enable(rf_writeback_enable),
-        .read_enable1(rf_read_enable1),
-        .read_enable2(rf_read_enable2),
-        .read_addr1(rf_read_addr1),
-        .read_addr2(rf_read_addr2),
-        .write_addr(rf_writeback_addr),
-        .write_data(rf_writeback_data),
-        .read_data1(rf_read_data1),
-        .read_data2(rf_read_data2)
+    .clk(clk),
+    .rst(rst),
+    .write_enable(rf_writeback_enable),
+    .read_enable1(rf_read_enable1),
+    .read_enable2(rf_read_enable2),
+    .read_addr1(rf_read_addr1),
+    .read_addr2(rf_read_addr2),
+    .write_addr(rf_writeback_addr),
+    .write_data(rf_writeback_data),
+    .read_data1(rf_read_data1),
+    .read_data2(rf_read_data2)
     );
 
 instructionDecoder instruction_decoder (.*);
