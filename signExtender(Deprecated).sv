@@ -1,5 +1,5 @@
-module signExtender #(parameter INPUT_SIZE=12;
-                      parameter XLEN=32;)
+module signExtender #(parameter INPUT_SIZE=12,
+                      parameter XLEN=32)
 (input enable,
  input [INPUT_SIZE - 1:0]  data_in,
  output [RV32I - 1:0] data_out

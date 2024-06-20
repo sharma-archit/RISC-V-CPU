@@ -1,8 +1,8 @@
 module writeBackCycle #(
-    parameter XLEN=32;
+    parameter XLEN=32
 ) (
     input [1:0] writeback_data_sel,
-    output [XLEN-1:0] writeback_data,
+    output logic[XLEN-1:0] writeback_data,
     input [XLEN-1:0] alu_data_out,
     input [XLEN-1:0] PC_in,
     input [XLEN-1:0] dm_read_data
@@ -12,6 +12,8 @@ module writeBackCycle #(
     
     //NOTE make sure to implement the mux for data to write back to destination register
     //This is where the bundle of register right signals are required
+always_comb begin
+
     if (writeback_data_sel == ALU) begin
 
         writeback_data = alu_data_out;
@@ -24,7 +26,10 @@ module writeBackCycle #(
     end
     else if (writeback_data_sel == PC) begin
 
-        writeback_data = PC_in + 4;
+        writeback_data = PC_in;
         
     end
+    
+end
+
 endmodule

@@ -1,6 +1,6 @@
-module arithmeticLogicUnit #(parameter SEL_SIZE = 4;
-             parameter SHIFT_SIZE = 5;
-             parameter XLEN = 32;)
+module arithmeticLogicUnit #(parameter SEL_SIZE = 4,
+             parameter SHIFT_SIZE = 5,
+             parameter XLEN = 32)
 (
     input  enable,
     input  [SEL_SIZE - 1:0]  sel,
@@ -10,7 +10,7 @@ module arithmeticLogicUnit #(parameter SEL_SIZE = 4;
     output logic [XLEN - 1:0] data_out    
     );
 
-enum {ADD, SUB, SLT, SLTU, AND, OR, XOR, SLL, SRL, SRA, LUI, AUIPC} ALU_OP;
+enum {ADD, SUB, SLT, SLTU, ANDI, ORI, XORI, SLL, SRL, SRA, LUI, AUIPC} ALU_OP_E;
 
 always_comb begin
 
@@ -47,7 +47,7 @@ if (enable) begin
 
         SLTU: begin
 
-             if (unsigned(data_in_a) < unsigned(data_in_b)) begin
+             if (unsigned'(data_in_a) < unsigned'(data_in_b)) begin
 
                 data_out = 1;
 
@@ -59,19 +59,19 @@ if (enable) begin
             end
         end
         
-        AND: begin
+        ANDI: begin
 
             data_out = data_in_a & data_in_b;
 
         end
 
-        OR: begin
+        ORI: begin
             
             data_out = data_in_a | data_in_b;
 
         end
 
-        XOR: begin
+        XORI: begin
             
             data_out = data_in_a ^ data_in_b;
 
@@ -110,13 +110,15 @@ if (enable) begin
     default:
         data_out = 0;
 
-end else begin
+    endcase
+
+end
+
+else begin
     
     data_out = '0;
 
 end
-
-endcase
 
 end
 

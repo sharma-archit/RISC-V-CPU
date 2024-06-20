@@ -1,6 +1,6 @@
-module loadStore #(parameter OFFSET_SIZE = 12;
-                   parameter DATA_WIDTH = 3;
-                   parameter XLEN = 32;)
+module loadStore #(parameter OFFSET_SIZE = 12,
+                   parameter DATA_WIDTH = 3,
+                   parameter XLEN = 32)
 (
     input load_enable,
     input store_enable,

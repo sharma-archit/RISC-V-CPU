@@ -1,12 +1,12 @@
 module decodeCycle #(
-    parameter = XLEN = 32;
-    parameter ALU_SEL_SIZE = 4;
-    parameter SHIFT_SIZE = 5;
-    parameter FUNCT3_SIZE = 3;
-    parameter JALR_OFFSET_SIZE = 12;
-    parameter JAL_OFFSET_SIZE = 20;
-    parameter LOAD_OFFSET = 12;
-    parameter REGISTER_SIZE = 5;
+    parameter XLEN = 32,
+    parameter ALU_SEL_SIZE = 4,
+    parameter SHIFT_SIZE = 5,
+    parameter FUNCT3_SIZE = 3,
+    parameter JALR_OFFSET_SIZE = 12,
+    parameter JAL_OFFSET_SIZE = 20,
+    parameter LOAD_OFFSET = 12,
+    parameter REGISTER_SIZE = 5
    ) 
 (   input clk, 
     input rst, 
@@ -36,7 +36,7 @@ module decodeCycle #(
     output logic dm_read_enable,
     output logic dm_write_enable,
     output logic [XLEN-1:0] dm_write_data, 
-    output logic [2:0] dm_load_type
+    output logic [2:0] dm_load_type,
 
     // pipeline hazard control signals
     output logic f_to_d_enable_ff, // fetch to decode ff enable
@@ -45,9 +45,9 @@ module decodeCycle #(
 );
 
     // internal registers
-    logic [REGISTER_SIZE-1:0] destination_reg,
-    logic [REGISTER_SIZE-1:0] source_reg1,
-    logic [REGISTER_SIZE-1:0] source_reg2,
+    logic [REGISTER_SIZE-1:0] destination_reg;
+    logic [REGISTER_SIZE-1:0] source_reg1;
+    logic [REGISTER_SIZE-1:0] source_reg2;
 
     logic [FUNCT3_SIZE - 1:0] jbl_operation;
     logic [JALR_OFFSET_SIZE - 1:0] jbl_offset;
@@ -59,8 +59,8 @@ module decodeCycle #(
 
     logic rf_read_enable1;
     logic rf_read_enable2;
-    logic [XLEN - 1:0] rf_read_data1,
-    logic [XLEN - 1:0] rf_read_data2,
+    logic [XLEN - 1:0] rf_read_data1;
+    logic [XLEN - 1:0] rf_read_data2;
     logic [REGISTER_SIZE-1:0] rf_read_addr1;
     logic [REGISTER_SIZE-1:0] rf_read_addr2;
     

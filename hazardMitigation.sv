@@ -1,5 +1,5 @@
-module hazardMitigation #( parameter REGISTER_SIZE = 5;
-                           parameter SHIFT_DEPTH = 3;) // current and previous two instructions
+module hazardMitigation #( parameter REGISTER_SIZE = 5,
+                           parameter SHIFT_DEPTH = 3) // current and previous two instructions
     (
     input clk,
     input rst,
@@ -13,6 +13,9 @@ module hazardMitigation #( parameter REGISTER_SIZE = 5;
     output logic d_to_e_enable_ff, // decode to execute ff enable
     output logic [1:0] [1:0] pipeline_forward_sel // data fwd source mux select
 );
+
+`define A 0;
+`define B 1;
 
 enum logic [1:0] {DECODE_RF_OPERAND, MEM_ACCESS_DM_OPERAND, EXECUTE_ALU_OPERAND, MEM_ACCESS_ALU_OPERAND} DATA_FWD_SOURCE;
 

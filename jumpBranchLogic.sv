@@ -1,7 +1,7 @@
-module jumpBranchLogic #(parameter OFFSET_SIZE = 12;
-                         parameter JAL_OFFSET_SIZE = 20;
-                         parameter OPERATION_SIZE = 3;
-                         parameter XLEN = 32;)
+module jumpBranchLogic #(parameter OFFSET_SIZE = 12,
+                         parameter JAL_OFFSET_SIZE = 20,
+                         parameter OPERATION_SIZE = 3,
+                         parameter XLEN = 32)
 (
     input [OPERATION_SIZE - 1:0]  operation,
     input [OFFSET_SIZE - 1:0] offset,
@@ -9,7 +9,7 @@ module jumpBranchLogic #(parameter OFFSET_SIZE = 12;
     input [XLEN - 1:0] data_in1,
     input [XLEN - 1:0] data_in2,
     input [XLEN - 1:0] address_in, // tie to program counter
-    output[XLEN - 1:0] address_out
+    output logic [XLEN - 1:0] address_out
 );
 
 logic [11:0] JALR_offset;
@@ -38,7 +38,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
                 if (data_in1 == data_in2) begin
                     
-                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
                     
                 end
                 else begin
@@ -52,7 +52,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             BNE: begin
                 if (data_in1 != data_in2) begin 
 
-                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
 
                 end
                 else begin
@@ -66,7 +66,7 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             BLT: begin
                 if (data_in1 < data_in2) begin    
 
-                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
 
                 end
                 else begin
@@ -79,9 +79,9 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
             BGE: begin
                 
-                if (unsigned(data_in1) >= unsigned(data_in2)) begin  
+                if (unsigned'(data_in1) >= unsigned'(data_in2)) begin  
 
-                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
 
                 end
                 else begin
@@ -94,9 +94,9 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
             BLTU: begin
 
-                if (unsigned(data_in1) < unsigned(data_in2)) begin
+                if (unsigned'(data_in1) < unsigned'(data_in2)) begin
 
-                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
 
                 end
                 else begin
@@ -110,9 +110,9 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
             BGEU: begin
 
-                if (unsigned(data_in1) >= unsigned(data_in2)) begin
+                if (unsigned'(data_in1) >= unsigned'(data_in2)) begin
 
-                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset}
+                    address_out = address_in + {{(XLEN - OFFSET_SIZE){offset[OFFSET_SIZE - 1]}}, offset};
 
                 end
                 else begin

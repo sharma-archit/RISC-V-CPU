@@ -1,7 +1,7 @@
 module executeCycle #(
-    parameter SEL_SIZE = 4;
-    parameter SHIFT_SIZE = 5;
-    parameter XLEN = 32;
+    parameter SEL_SIZE = 4,
+    parameter SHIFT_SIZE = 5,
+    parameter XLEN = 32
 ) (
     input alu_enable,
     input  [SEL_SIZE - 1:0]  alu_sel,

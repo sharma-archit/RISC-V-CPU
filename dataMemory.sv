@@ -1,4 +1,4 @@
-module dataMemory #(parameter XLEN = 32;)
+module dataMemory #(parameter XLEN = 32)
 (
     input  read_enable,
     input  write_enable,
