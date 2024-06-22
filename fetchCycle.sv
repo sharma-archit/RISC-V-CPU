@@ -1,4 +1,4 @@
-module moduleName #(parameter XLEN = 32)           
+module fetchCycle #(parameter XLEN = 32)           
 (
     input  [XLEN-1:0] PC_in,
     output [XLEN-1:0] PC_out,
@@ -6,7 +6,7 @@ module moduleName #(parameter XLEN = 32)
     // debug ports to write into instruction memory during testing
     input dbg_wr_en,
     input [XLEN-1:0] dbg_addr,
-    output [XLEN-1:0] dbg_instr
+    input [XLEN-1:0] dbg_instr
 );
 
 assign PC_out = PC_in;
@@ -16,7 +16,7 @@ instructionMemory instruction_memory (
     .instruction(instruction),
     .dbg_wr_en(dbg_wr_en),
     .dbg_addr(dbg_addr),
-    .dbg_instr(dbdbg_instr)
+    .dbg_instr(dbg_instr)
     );
 
 endmodule

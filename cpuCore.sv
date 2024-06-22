@@ -11,7 +11,7 @@ module cpuCore #(parameter XLEN = 32,
     // debug ports to write instruction memory for testing
     input dbg_wr_en,
     input [XLEN-1:0] dbg_addr,
-    output [XLEN-1:0] dbg_instr
+    input [XLEN-1:0] dbg_instr
 );
 
 const logic A = 0;
@@ -21,7 +21,7 @@ enum logic [1:0] {DECODE_RF_OPERAND, MEM_ACCESS_DM_OPERAND, EXECUTE_ALU_OPERAND,
 
 // combinational signals
 logic [XLEN - 1: 0] instruction;
-logic [WRITEBACK:0] PC;
+logic [WRITEBACK:0] [XLEN-1:0] PC_i;
 
 logic alu_enable;
 logic [ALU_SEL_SIZE - 1: 0] alu_sel;
@@ -79,9 +79,9 @@ logic [1:0][1:0] pipeline_forward_sel;
 
 /////////////// Fetch Cycle ///////////////
 
-fetchCycle temp (
-    .PC_in(PC[DECODE]),
-    .PC_out(PC[FETCH]),
+fetchCycle fetch_cycle (
+    .PC_in(PC_i[DECODE]),
+    .PC_out(PC_i[FETCH]),
     .instruction(instruction),
     .dbg_wr_en(dbg_wr_en),
     .dbg_addr(dbg_addr),
@@ -106,7 +106,7 @@ always_ff @(posedge(clk)) begin : fetch_to_decode_ff
         // stall decode stage if f_to_d_enable_ff is deasserted and it was asserted the previous cycle
         if (f_to_d_enable_ff || !f_to_d_enable_ff_prev) begin
             
-            PC_d[DECODE] <= PC[FETCH];
+            PC_d[DECODE] <= PC_i[FETCH];
             instruction_d[DECODE] <= instruction;
 
         end
@@ -120,7 +120,7 @@ end : fetch_to_decode_ff
 decodeCycle decode_cycle (
     .instruction(instruction_d[DECODE]),
     .PC_in(PC_d[DECODE]),
-    .PC_out(PC[DECODE]),
+    .PC_out(PC_i[DECODE]),
 
     .f_to_d_enable_ff(f_to_d_enable_ff),
     .d_to_e_enable_ff(d_to_e_enable_ff),
@@ -206,7 +206,7 @@ always_ff @(posedge(clk)) begin : decode_to_execute_ff
         // stall execute stage if d_to_e_enable_ff is deasserted and it was asserted the previous cycle
         if (d_to_e_enable_ff || !d_to_e_enable_ff_prev) begin
 
-            PC_d[EXECUTE] <= PC[DECODE];
+            PC_d[EXECUTE] <= PC_i[DECODE];
             alu_enable_d[EXECUTE] <= alu_enable;
             alu_sel_d[EXECUTE] <= alu_sel;
             alu_shift_amt_d[EXECUTE] <= alu_shift_amt;

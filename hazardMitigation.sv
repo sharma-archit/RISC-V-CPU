@@ -14,8 +14,8 @@ module hazardMitigation #( parameter REGISTER_SIZE = 5,
     output logic [1:0] [1:0] pipeline_forward_sel // data fwd source mux select
 );
 
-`define A 0;
-`define B 1;
+const logic A = 0;
+const logic B = 1;
 
 enum logic [1:0] {DECODE_RF_OPERAND, MEM_ACCESS_DM_OPERAND, EXECUTE_ALU_OPERAND, MEM_ACCESS_ALU_OPERAND} DATA_FWD_SOURCE;
 
@@ -43,7 +43,11 @@ always_ff @(posedge(clk)) begin : instr_shift_reg
 
     if (rst) begin
 
-        instr_reg_info <= '0;
+        for (int i = 0; i < SHIFT_DEPTH-1; i = i+1) begin
+            
+            instr_reg_info[i + 1] <= '0;
+            
+        end
 
     end
     else begin
@@ -66,7 +70,11 @@ always_ff @(posedge(clk)) begin : load_check_shift_reg
 
     if (rst) begin
 
-        dm_read_enable_d <= '0;
+        for (int i = 0; i < SHIFT_DEPTH-1; i = i+1) begin
+            
+            dm_read_enable_d[i + 1] <= '0;
+            
+        end
 
     end
     else begin

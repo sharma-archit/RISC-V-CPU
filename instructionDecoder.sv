@@ -64,7 +64,7 @@ const logic [6:0] JALR   = 7'b1100111;
 const logic [6:0] FENCE  = 7'b0001111;
 // instruction groups
 const logic [6:0] BRANCH = 7'b1100011;
-const logic [6:0] LOAD  = 7'b0000011;
+const logic [6:0] LOAD  =  7'b0000011;
 const logic [6:0] STORE  = 7'b0100011;
 const logic [6:0] IRII   = 7'b0010011;
 const logic [6:0] IRRO   = 7'b0110011;
