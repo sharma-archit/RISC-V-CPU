@@ -14,7 +14,14 @@ cpuCore cpu_core(.*);
         rst = 1;
         dbg_wr_en = 0;
         dbg_addr = 4;
-        dbg_instr = 32'b00000000000100001000000100100011;
+        dbg_instr = {12'b111001110101, 5'b00001, 3'b000, 5'b00010, 7'b0010011};
+        #(2*CLK_PERIOD)
+        dbg_wr_en = 1;
+        #CLK_PERIOD
+        dbg_wr_en = 0;
+        #CLK_PERIOD
+        dbg_addr = 8;
+        dbg_instr = {12'b010101011001, 5'b00010, 3'b000, 5'b00011, 7'b0010011};
         #(2*CLK_PERIOD)
         dbg_wr_en = 1;
         #CLK_PERIOD

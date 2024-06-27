@@ -118,7 +118,7 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE]; //which CPU reg to write to
             rf_write_data_sel = ALU; //rf write data to be computed in the execute cycle
             
-            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             source_reg1 = 'x;
             source_reg2 = 'x;
             
@@ -135,7 +135,7 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE]; //which CPU reg to write to
             rf_write_data_sel= ALU; //rf write data to be computed in the execute cycle
 
-            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             source_reg1 = 'x;
             source_reg2 = 'x;
 
@@ -151,7 +151,7 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             rf_write_data_sel = PC; //current PC + 4;
 
-            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             source_reg1 = 'x;
             source_reg2 = 'x;
 
@@ -170,8 +170,8 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             rf_write_data_sel = PC; //current PC + 4
 
-            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+            destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
             source_reg2 = 'x;
 
         end
@@ -189,8 +189,8 @@ always_comb begin : decoder
             rf_read_addr2 = instruction[SOURCE_REGISTER2_LOC - 1:SOURCE_REGISTER2_LOC - REGISTER_SIZE];
 
             destination_reg = 'x;
-            source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-            source_reg2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
+            source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+            source_reg2 = instruction[SOURCE_REGISTER2_LOC - 1: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
 
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : BEQ_
             
@@ -235,14 +235,14 @@ always_comb begin : decoder
                 rf_read_addr1 = instruction[SOURCE_REGISTER1_LOC:SOURCE_REGISTER1_LOC - REGISTER_SIZE]; // address of cpu register holding base address
                 
                 rf_write_enable = 1;
-                rf_write_addr = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE]; //address of destination cpu register to load data into
+                rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE]; //address of destination cpu register to load data into
 
                 dm_read_enable = 1;
                 
                 rf_write_data_sel = DATA_MEM;
 
-                destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-                source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+                destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+                source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
                 source_reg2 = 'x;
 
                 if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : LB
@@ -278,8 +278,8 @@ always_comb begin : decoder
                 dm_write_enable = 1;
 
                 destination_reg = 'x;
-                source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-                source_reg2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
+                source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+                source_reg2 = instruction[SOURCE_REGISTER2_LOC - 1: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
 
                 if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : SB
                     dm_write_data = {{(XLEN - BYTE){rf_read_data2[BYTE - 1]}}, rf_read_data2[BYTE - 1:0]}; // data byte sign extended to 32 bits
@@ -305,8 +305,8 @@ always_comb begin : decoder
                 rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
                 rf_write_data_sel = ALU;
 
-                destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-                source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+                destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+                source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
                 source_reg2 = 'x;
 
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000) begin : ADDI_
@@ -386,9 +386,9 @@ always_comb begin : decoder
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             rf_write_data_sel = ALU;
 
-            destination_reg = instruction[DESTINATION_REGISTER_LOC:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            source_reg1 = instruction[SOURCE_REGISTER1_LOC: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
-            source_reg2 = instruction[SOURCE_REGISTER2_LOC: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
+            destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
+            source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
+            source_reg2 = instruction[SOURCE_REGISTER2_LOC - 1: SOURCE_REGISTER2_LOC - REGISTER_SIZE];
             
             if (instruction[FUNCT3 - 1:FUNCT3 - FUNCT3_SIZE] == 3'b000 && instruction[XLEN - 1:XLEN - 7] == 7'b0000000) begin : ADD_
 

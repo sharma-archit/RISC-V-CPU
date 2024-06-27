@@ -21,7 +21,7 @@ enum logic [1:0] {DECODE_RF_OPERAND, MEM_ACCESS_DM_OPERAND, EXECUTE_ALU_OPERAND,
 
 // combinational signals
 logic [XLEN - 1: 0] instruction;
-logic [WRITEBACK:0] [XLEN-1:0] PC_i;
+logic [WRITEBACK:0] [XLEN-1:0] PC_i; // rename this back to PC when done testing
 
 logic alu_enable;
 logic [ALU_SEL_SIZE - 1: 0] alu_sel;
@@ -58,7 +58,6 @@ logic [WRITEBACK:0] [XLEN - 1: 0] alu_data_out_d;
 
 logic [WRITEBACK:0] rf_writeback_enable_d;
 logic [WRITEBACK:0] [XLEN - 1: 0] rf_writeback_addr_d;
-logic [WRITEBACK:0] [XLEN - 1: 0] rf_writeback_data_d;
     
 logic [WRITEBACK:0] rf_write_enable_d;
 logic [WRITEBACK:0] [XLEN - 1: 0] rf_write_addr_d;
@@ -75,6 +74,9 @@ logic [MEMORY_ACCESS:0] [XLEN - 1: 0]dm_data_bypass_d;
 logic f_to_d_enable_ff, f_to_d_enable_ff_prev;
 logic d_to_e_enable_ff, d_to_e_enable_ff_prev;
 logic [1:0][1:0] pipeline_forward_sel;
+
+logic [XLEN - 1:0] dec_alu_data_in_a;
+logic [XLEN - 1:0] dec_alu_data_in_b;
 
 
 /////////////// Fetch Cycle ///////////////
@@ -135,7 +137,7 @@ decodeCycle decode_cycle (
     // rf_writeback input signals passed directly from writeback stage to decode stage
     .rf_writeback_enable(rf_write_enable_d[WRITEBACK]),
     .rf_writeback_addr(rf_write_addr_d[WRITEBACK]),
-    .rf_writeback_data(rf_write_data),
+    .rf_writeback_data(rf_writeback_data),
     
     .rf_write_enable(rf_write_enable),
     .rf_write_addr(rf_write_addr),
@@ -151,25 +153,25 @@ always_comb begin : pipeline_data_forward_mux
 
 case (pipeline_forward_sel[A])
 
-    MEM_ACCESS_DM_OPERAND: alu_data_in_a[DECODE] = dm_read_data;
+    MEM_ACCESS_DM_OPERAND: alu_data_in_a = dm_read_data;
 
-    EXECUTE_ALU_OPERAND: alu_data_in_a[DECODE] = alu_data_out;
+    EXECUTE_ALU_OPERAND: alu_data_in_a = alu_data_out;
     
-    MEM_ACCESS_ALU_OPERAND: alu_data_in_a[DECODE] = dm_data_bypass;
+    MEM_ACCESS_ALU_OPERAND: alu_data_in_a = dm_data_bypass;
 
-    default: alu_data_in_a[DECODE] = dec_alu_data_in_a;
+    default: alu_data_in_a = dec_alu_data_in_a;
     
 endcase
 
 case (pipeline_forward_sel[B])
 
-    MEM_ACCESS_DM_OPERAND: alu_data_in_b[DECODE] = dm_read_data;
+    MEM_ACCESS_DM_OPERAND: alu_data_in_b = dm_read_data;
     
-    EXECUTE_ALU_OPERAND: alu_data_in_b[DECODE] = alu_data_out;
+    EXECUTE_ALU_OPERAND: alu_data_in_b = alu_data_out;
     
-    MEM_ACCESS_ALU_OPERAND: alu_data_in_b[DECODE] = dm_data_bypass;
+    MEM_ACCESS_ALU_OPERAND: alu_data_in_b = dm_data_bypass;
     
-    default: alu_data_in_b[DECODE] = dec_alu_data_in_b;
+    default: alu_data_in_b = dec_alu_data_in_b;
 
 endcase
 
@@ -316,7 +318,7 @@ end : memaccess_to_writeback_FF
 
 writeBackCycle write_back_cycle (
     .writeback_data_sel(rf_write_data_sel_d[WRITEBACK]),
-    .writeback_data(rf_write_data),
+    .writeback_data(rf_writeback_data),
     .alu_data_out(alu_data_out_d[WRITEBACK]),
     .PC_in(PC_d[WRITEBACK]),
     .dm_read_data(dm_read_data_d[WRITEBACK])

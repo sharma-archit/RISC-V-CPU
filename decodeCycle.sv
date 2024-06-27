@@ -95,6 +95,7 @@ hazardMitigation hazard_mitigation(
     .destination_reg(destination_reg),
     .source_reg1(source_reg1),
     .source_reg2(source_reg2),
+    .dm_read_enable(dm_read_enable),
     .f_to_d_enable_ff(f_to_d_enable_ff),
     .d_to_e_enable_ff(d_to_e_enable_ff),
     .pipeline_forward_sel(pipeline_forward_sel)

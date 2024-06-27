@@ -39,7 +39,10 @@ always_comb begin
     // end
     //Check if read or write action
     // else 
-    if (rst == 0) begin
+    //if (rst == 0) begin
+
+        read_data1 = '0;
+        read_data2 = '0;
 
         if (write_enable) begin
             
@@ -58,13 +61,8 @@ always_comb begin
             read_data2 = cpu_register[read_addr2];
 
         end
-        else begin
-            
-            read_data1 = '0;
-            read_data2 = '0;
-        end
 
-    end
+    //end
     
 end
 
