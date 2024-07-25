@@ -53,9 +53,11 @@ always_ff @(posedge(clk)) begin : instr_shift_reg
     else begin
 
         // cycle instructions 
-        for (int i = 0; i < SHIFT_DEPTH-1; i = i+1) begin
+        for (int i = 0; i < SHIFT_DEPTH-1; i = i + 1) begin
             
-            instr_reg_info[i + 1] <= instr_reg_info[i];
+            instr_reg_info[i + 1].destination <= instr_reg_info[i].destination;
+            instr_reg_info[i + 1].source1 <= instr_reg_info[i].source1;
+            instr_reg_info[i + 1].source2 <= instr_reg_info[i].source2;
             
         end
 
@@ -125,9 +127,10 @@ always_comb begin : pipeline_data_hazard_detection
             
             // for non-load previous instructions
             else begin : non_load_instr_A
+
                 if (i == 1) begin
                     //forward alu_data_out from execute cycle to decode cycle
-                    pipeline_forward_sel[A]= EXECUTE_ALU_OPERAND;
+                    pipeline_forward_sel[A] = EXECUTE_ALU_OPERAND;
                 end
                 else begin
                 //forward alu_data_out from memory access cycle to decode cycle

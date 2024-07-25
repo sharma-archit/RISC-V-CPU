@@ -14,6 +14,8 @@ module writeBackCycle #(
     //This is where the bundle of register right signals are required
 always_comb begin
 
+    writeback_data = '0;
+
     if (writeback_data_sel == ALU) begin
 
         writeback_data = alu_data_out;

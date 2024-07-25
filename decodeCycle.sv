@@ -66,8 +66,8 @@ module decodeCycle #(
     
 
 regFile register_file (
-    .clk(clk),
-    .rst(rst),
+    //.clk(clk),
+    //.rst(rst),
     .write_enable(rf_writeback_enable),
     .read_enable1(rf_read_enable1),
     .read_enable2(rf_read_enable2),
@@ -92,6 +92,8 @@ jumpBranchLogic jump_branch_logic (
     );
 
 hazardMitigation hazard_mitigation(
+    .clk(clk),
+    .rst(rst),
     .destination_reg(destination_reg),
     .source_reg1(source_reg1),
     .source_reg2(source_reg2),

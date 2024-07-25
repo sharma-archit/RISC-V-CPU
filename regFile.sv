@@ -1,8 +1,8 @@
 module regFile #(parameter ADDR_SIZE = 5,
                   parameter XLEN = 32)
 (
-    input clk,
-    input rst,
+    //input clk,
+    //input rst,
     input write_enable,
     input read_enable1,
     input read_enable2,

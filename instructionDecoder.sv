@@ -78,6 +78,10 @@ enum {ALU, DATA_MEM, PC} WRITEBACK_DATA_SEL_E; // to select the source of write 
 always_comb begin : decoder
 
     // default all control signals to 0
+    destination_reg = 0;
+    source_reg1 = 0;
+    source_reg2 = 0;
+    
     alu_enable = 0;
     alu_sel = 0;
     alu_shift_amt = '0;
@@ -485,6 +489,10 @@ always_comb begin : decoder
 
             end
 
+        end
+
+        default: begin
+            //raise error
         end
 
     endcase //Since all signals are set to zero in the beginning of the decode cycle nothing will happen if it's an invalid instruction

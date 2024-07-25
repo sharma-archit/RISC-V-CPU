@@ -14,14 +14,14 @@ cpuCore cpu_core(.*);
         rst = 1;
         dbg_wr_en = 0;
         dbg_addr = 4;
-        dbg_instr = {12'b111001110101, 5'b00001, 3'b000, 5'b00010, 7'b0010011};
+        dbg_instr = {12'b111001110101, 5'b00001, 3'b000, 5'b00010, 7'b0010011}; //immediate value = -395, source reg = 1, ADDI, dest reg = 2, opcode = IRRO
         #(2*CLK_PERIOD)
         dbg_wr_en = 1;
         #CLK_PERIOD
         dbg_wr_en = 0;
         #CLK_PERIOD
         dbg_addr = 8;
-        dbg_instr = {12'b010101011001, 5'b00010, 3'b000, 5'b00011, 7'b0010011};
+        dbg_instr = {7'b0000000, 5'b00010, 5'b00000, 3'b010, 5'b00000, 7'b0100011}; //immediate value = 0, data source reg = 2, mem base addr = 0, STORE WORD, opcode = STORE
         #(2*CLK_PERIOD)
         dbg_wr_en = 1;
         #CLK_PERIOD
