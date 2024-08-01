@@ -13,6 +13,8 @@ module dataMemory #(parameter XLEN = 32)
 logic [2^(XLEN - 1) - 1:0][7:0] data_memory; // data memory is half the address-space
 
 always_comb begin
+    
+    read_data = '0;
 
     if (read_enable == 1) begin
     
@@ -23,25 +25,14 @@ always_comb begin
         end
 
     end
-    else begin 
-
-        read_data = '0;
-
-    end 
 
     if (write_enable == 1) begin
 
-        read_data = '0;
         for (int i = 0; i < (XLEN/8) ; i++) begin // Transfer 8 bit data sets in 4 steps, totalling 32 bits
 
             data_memory[write_addr + i] = write_data[i];
 
         end
-
-    end
-    else begin
-
-        read_data = '0;
 
     end
     

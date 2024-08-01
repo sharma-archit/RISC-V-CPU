@@ -106,7 +106,7 @@ always_comb begin : pipeline_data_hazard_detection
     for (int i = 1; i < 3 ; i=i+1) begin
     
         // if a past instruction's destination reg is source1 reg for the current instruction
-        if (instr_reg_info[i].destination == instr_reg_info[0].source1) begin
+        if (instr_reg_info[i].destination == instr_reg_info[0].source1 && instr_reg_info[i].destination !== 0 && instr_reg_info[0].source1 !== 0) begin
             
             // for previous load instructions
             if (dm_read_enable_d[i]) begin : load_instr_A
@@ -143,7 +143,7 @@ always_comb begin : pipeline_data_hazard_detection
         end
 
         // if a past instruction's destination reg is source2 reg for the current instruction
-        if (instr_reg_info[i].destination == instr_reg_info[0].source2) begin
+        if (instr_reg_info[i].destination == instr_reg_info[0].source2 && instr_reg_info[i].destination !== 0 && instr_reg_info[0].source2 !== 0) begin
             
             // for previous load instructions
             if (dm_read_enable_d[i]) begin : load_instr_B
@@ -164,6 +164,7 @@ always_comb begin : pipeline_data_hazard_detection
             
             // for non-load previous instructions
             else begin : non_load_instr_B
+
                 if (i == 1) begin
                     //forward alu_data_out from execute cycle to decode cycle
                     pipeline_forward_sel[B] = EXECUTE_ALU_OPERAND;

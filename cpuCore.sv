@@ -169,37 +169,55 @@ endcase
 
 case (pipeline_forward_sel[B]) //Operand forwarding for alu_in_b/store data source
 
-    MEM_ACCESS_DM_OPERAND: begin 
+    MEM_ACCESS_DM_OPERAND: begin //Forward operand from mem access cycle into ALU input a
 
         alu_data_in_b = dm_read_data; 
         dm_write_data = dm_read_data;
         
     end
     
-    EXECUTE_ALU_OPERAND: begin 
+    EXECUTE_ALU_OPERAND: begin //Forward operand from execute to ALU input b or dm_write_data
 
-        alu_data_in_b = alu_data_out;
-        dm_write_data = alu_data_out;
+        if (dm_write_enable) begin // if instruction is store 
+            
+            alu_data_in_b = dec_alu_data_in_b;
+            dm_write_data = alu_data_out;
+            
+        end
+        else begin
+            
+            alu_data_in_b = alu_data_out;
+            dm_write_data = dec_dm_write_data;
+
+        end
         
     end
     
-    MEM_ACCESS_ALU_OPERAND: begin
+    MEM_ACCESS_ALU_OPERAND: begin //Forward operand from mem access into ALU input b or dm_write_data
         
-        alu_data_in_b = dm_data_bypass;
-        dm_write_data = dm_data_bypass;
-        
+        if (dm_write_enable) begin // if instruction is store 
+            
+            alu_data_in_b = dec_alu_data_in_b;
+            dm_write_data = dm_data_bypass;
+            
+        end
+        else begin
+            
+            alu_data_in_b = dm_data_bypass;
+            dm_write_data = dec_dm_write_data;
+
+        end
+
     end
     
     default: begin 
 
-        alu_data_in_b = dec_alu_data_in_b; 
+        alu_data_in_b = dec_alu_data_in_b;
         dm_write_data = dec_dm_write_data;
         
     end
 
 endcase
-
-
 
 end: pipeline_data_forward_mux
 

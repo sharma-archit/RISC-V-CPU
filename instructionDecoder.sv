@@ -147,13 +147,18 @@ always_comb begin : decoder
 
         JAL: begin
             
+            alu_enable = 1; // use ALU to compute current PC + 4
+            alu_sel = ADDI_;
+            dec_alu_data_in_a = PC_in;
+            dec_alu_data_in_b = 4;
+
             jbl_operation = JBL_JAL;
             jbl_jal_offset = {instruction[31], instruction[19:12], instruction[20], instruction[30:21]};
             jbl_address_in = PC_in; //Make sure the PC value is the value of the JAL instruction
 
             rf_write_enable = 1;
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            rf_write_data_sel = PC; //current PC + 4;
+            rf_write_data_sel = ALU; //current PC + 4;
 
             destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             source_reg1 = 'x;
