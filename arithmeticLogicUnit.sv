@@ -26,7 +26,7 @@ if (enable) begin
 
         SUB: begin
 
-            data_out = data_in_b - data_in_a;
+            data_out = data_in_a - data_in_b;
 
         end
         

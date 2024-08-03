@@ -148,7 +148,7 @@ always_comb begin : decoder
         JAL: begin
             
             alu_enable = 1; // use ALU to compute current PC + 4
-            alu_sel = ADDI_;
+            alu_sel = ADD;
             dec_alu_data_in_a = PC_in;
             dec_alu_data_in_b = 4;
 
@@ -168,6 +168,11 @@ always_comb begin : decoder
 
         JALR: begin
             
+            alu_enable = 1;
+            alu_sel = ADD;
+            dec_alu_data_in_a = PC_in;
+            dec_alu_data_in_b = 4;
+            
             jbl_operation = JBL_JALR;
             jbl_offset = instruction[XLEN-1:XLEN - JALR_OFFSET_SIZE];
             jbl_address_in = rf_read_data1;
@@ -177,7 +182,7 @@ always_comb begin : decoder
             rf_read_addr1 = instruction[SOURCE_REGISTER1_LOC - 1:SOURCE_REGISTER1_LOC - REGISTER_SIZE];
             rf_write_enable = 1;
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
-            rf_write_data_sel = PC; //current PC + 4
+            rf_write_data_sel = ALU; //current PC + 4
 
             destination_reg = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
             source_reg1 = instruction[SOURCE_REGISTER1_LOC - 1: SOURCE_REGISTER1_LOC - REGISTER_SIZE];
