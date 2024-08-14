@@ -27,13 +27,13 @@ cpuCore cpu_core(.*);
         #CLK_PERIOD
         dbg_wr_en = 0;
         #CLK_PERIOD
-        dbg_addr = 24;
-        dbg_instr = {7'b0100000, 5'b00010, 5'b00001, 3'b101, 5'b00011, 7'b0110011}; //source reg 2 = 2, source reg 1 = 1, dest reg = 3, opcode = SRA
+        dbg_addr = 12;
+        dbg_instr = {1'b0, 6'b000000, 5'b00000, 5'b00001, 3'b101, 4'b1100, 1'b0, 7'b1100011}; //immediate value = 12, source reg 2 = 0, source reg 1 = 2, dest reg = 3, opcode = BGE
         #(2*CLK_PERIOD)
         dbg_wr_en = 1;
         #CLK_PERIOD
         dbg_wr_en = 0;
-        #CLK_PERIOD
+        #(1.5*CLK_PERIOD)
         rst = 0;
 
     end

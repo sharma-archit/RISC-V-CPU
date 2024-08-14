@@ -10,8 +10,8 @@ module cpuCore #(parameter XLEN = 32,
     input rst,
     // debug ports to write instruction memory for testing
     input dbg_wr_en,
-    input [XLEN-1:0] dbg_addr,
-    input [XLEN-1:0] dbg_instr
+    input [XLEN - 1:0] dbg_addr,
+    input [XLEN - 1:0] dbg_instr
 );
 
 const logic A = 0;
@@ -21,7 +21,7 @@ enum logic [1:0] {DECODE_RF_OPERAND, MEM_ACCESS_DM_OPERAND, EXECUTE_ALU_OPERAND,
 
 // combinational signals
 logic [XLEN - 1: 0] instruction;
-logic [WRITEBACK:0] [XLEN-1:0] PC;
+logic [WRITEBACK:0] [XLEN - 1:0] PC;
 
 logic alu_enable;
 logic [ALU_SEL_SIZE - 1: 0] alu_sel;
@@ -78,12 +78,22 @@ logic [1:0][1:0] pipeline_forward_sel;
 logic [XLEN - 1:0] dec_alu_data_in_a;
 logic [XLEN - 1:0] dec_alu_data_in_b;
 
-logic [XLEN -1 :0] dec_dm_write_data;
+logic [XLEN - 1:0] dec_dm_write_data;
+
+logic [XLEN - 1:0] dec_jbl_data_in1;
+logic [XLEN - 1:0] dec_jbl_data_in2;
+logic [XLEN - 1:0] dec_jbl_address_in;
+
+logic [XLEN - 1:0] jbl_data_in1;
+logic [XLEN - 1:0] jbl_data_in2;
+logic [XLEN - 1:0] jbl_address_in;
 
 
 /////////////// Fetch Cycle ///////////////
 
 fetchCycle fetch_cycle (
+    .clk(clk),
+    .rst(rst),
     .PC_in(PC[DECODE]),
     .PC_out(PC[FETCH]),
     .instruction(instruction),
@@ -101,7 +111,7 @@ always_ff @(posedge(clk)) begin : fetch_to_decode_ff
         PC_d[DECODE] <= '0;
         instruction_d[DECODE] <= '0;
 
-    end 
+    end
     
     else begin
 
@@ -110,7 +120,7 @@ always_ff @(posedge(clk)) begin : fetch_to_decode_ff
         // stall decode stage if f_to_d_enable_ff is deasserted and it was asserted the previous cycle
         if (f_to_d_enable_ff || !f_to_d_enable_ff_prev) begin
             
-            PC_d[DECODE] <= PC[FETCH];
+            // PC_d[DECODE] <= PC[FETCH];
             instruction_d[DECODE] <= instruction;
 
         end
@@ -125,7 +135,7 @@ decodeCycle decode_cycle (
     .clk(clk),
     .rst(rst),
     .instruction(instruction_d[DECODE]),
-    .PC_in(PC_d[DECODE]),
+    .PC_in(PC[FETCH]),
     .PC_out(PC[DECODE]),
 
     .f_to_d_enable_ff(f_to_d_enable_ff),
@@ -150,35 +160,103 @@ decodeCycle decode_cycle (
     .dm_read_enable(dm_read_enable),
     .dm_write_enable(dm_write_enable),
     .dm_write_data(dec_dm_write_data),
-    .dm_load_type(dm_load_type)
+    .dm_load_type(dm_load_type),
+
+    .jbl_data_in1(jbl_data_in1),
+    .jbl_data_in2(jbl_data_in2),
+    .jbl_address_in(jbl_address_in),
+
+    .dec_jbl_data_in1(dec_jbl_data_in1),
+    .dec_jbl_data_in2(dec_jbl_data_in2),
+    .dec_jbl_address_in(dec_jbl_address_in)
 );
 
 always_comb begin : pipeline_data_forward_mux
 
 case (pipeline_forward_sel[A]) //Operand forwarding for alu_in_a
 
-    MEM_ACCESS_DM_OPERAND: alu_data_in_a = dm_read_data;
+    MEM_ACCESS_DM_OPERAND: begin
 
-    EXECUTE_ALU_OPERAND: alu_data_in_a = alu_data_out;
+        alu_data_in_a = dm_read_data;
+
+        if (instruction_d[DECODE][6:0] == 7'b1100011) begin
+        
+            jbl_data_in1 = dm_read_data; 
+            jbl_address_in = dec_jbl_address_in;
+
+        end
+        else begin
+            
+            jbl_data_in1 = dec_jbl_data_in1;
+            jbl_address_in = dm_read_data;
+
+        end
+
+    end
+
+    EXECUTE_ALU_OPERAND: begin
+        
+        alu_data_in_a = alu_data_out;
+        
+        if (instruction_d[DECODE][6:0] == 7'b1100011) begin
+        
+            jbl_data_in1 = alu_data_out;
+            jbl_address_in = dec_jbl_address_in;
+
+        end
+        else begin
+            
+            jbl_data_in1 = dec_jbl_data_in1;
+            jbl_address_in = alu_data_out;
+        end
+    end
     
-    MEM_ACCESS_ALU_OPERAND: alu_data_in_a = dm_data_bypass;
+    MEM_ACCESS_ALU_OPERAND: begin
 
-    default: alu_data_in_a = dec_alu_data_in_a;
+        alu_data_in_a = dm_data_bypass;
+
+        if (instruction_d[DECODE][6:0] == 7'b1100011) begin
+
+            jbl_data_in1 = dm_data_bypass;
+            jbl_address_in = dec_jbl_address_in;
+
+        end
+        else begin
+            
+            jbl_data_in1 = dec_jbl_data_in1;
+            jbl_address_in = dm_data_bypass;
+        end
+    end
+
+    default: begin
+
+        alu_data_in_a = dec_alu_data_in_a;
+        jbl_data_in1 = dec_jbl_data_in1;
+        jbl_address_in = dec_jbl_address_in;
+
+    end
     
 endcase
+
+
+
 
 case (pipeline_forward_sel[B]) //Operand forwarding for alu_in_b/store data source
 
     MEM_ACCESS_DM_OPERAND: begin //Forward operand from mem access cycle into ALU input a
 
-        alu_data_in_b = dm_read_data; 
+        alu_data_in_b = dm_read_data;
         dm_write_data = dm_read_data;
+
+        jbl_data_in2 = dm_read_data;
         
     end
     
-    EXECUTE_ALU_OPERAND: begin //Forward operand from execute to ALU input b or dm_write_data
+    EXECUTE_ALU_OPERAND: begin //Forward operand from execute cycle
 
-        if (dm_write_enable) begin // if instruction is store 
+        jbl_data_in2 = alu_data_out;
+        
+        if (dm_write_enable) begin // if instruction is store
             
             alu_data_in_b = dec_alu_data_in_b;
             dm_write_data = alu_data_out;
@@ -193,9 +271,11 @@ case (pipeline_forward_sel[B]) //Operand forwarding for alu_in_b/store data sour
         
     end
     
-    MEM_ACCESS_ALU_OPERAND: begin //Forward operand from mem access into ALU input b or dm_write_data
+    MEM_ACCESS_ALU_OPERAND: begin //Forward operand from mem access cycle
         
-        if (dm_write_enable) begin // if instruction is store 
+        jbl_data_in2 = dm_data_bypass;
+
+        if (dm_write_enable) begin // if instruction is store
             
             alu_data_in_b = dec_alu_data_in_b;
             dm_write_data = dm_data_bypass;
@@ -210,10 +290,11 @@ case (pipeline_forward_sel[B]) //Operand forwarding for alu_in_b/store data sour
 
     end
     
-    default: begin 
+    default: begin
 
         alu_data_in_b = dec_alu_data_in_b;
         dm_write_data = dec_dm_write_data;
+        jbl_data_in2 = dec_jbl_data_in2;
         
     end
 

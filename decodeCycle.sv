@@ -41,7 +41,15 @@ module decodeCycle #(
     // pipeline hazard control signals
     output logic f_to_d_enable_ff, // fetch to decode ff enable
     output logic d_to_e_enable_ff, // decode to execute ff enable
-    output logic [1:0] [1:0] pipeline_forward_sel // to forward data via pipeline bypassing
+    output logic [1:0] [1:0] pipeline_forward_sel, // to forward data via pipeline bypassing
+
+    input logic [XLEN-1:0] jbl_data_in1,
+    input logic [XLEN-1:0] jbl_data_in2,
+    input logic [XLEN-1:0] jbl_address_in,
+
+    output logic [XLEN-1:0] dec_jbl_data_in1,
+    output logic [XLEN-1:0] dec_jbl_data_in2,
+    output logic [XLEN-1:0] dec_jbl_address_in
 );
 
     // internal registers
@@ -52,9 +60,6 @@ module decodeCycle #(
     logic [FUNCT3_SIZE - 1:0] jbl_operation;
     logic [JALR_OFFSET_SIZE - 1:0] jbl_offset;
     logic [JAL_OFFSET_SIZE-1:0] jbl_jal_offset;
-    logic [XLEN-1:0] jbl_data_in1;
-    logic [XLEN-1:0] jbl_data_in2;
-    logic [XLEN-1:0] jbl_address_in;
     logic [XLEN - 1:0] jbl_address_out;
 
     logic rf_read_enable1;
@@ -104,6 +109,6 @@ hazardMitigation hazard_mitigation(
 );
     
     // use PC value computed by JBL block if the current instruction is a jump/branch instruction, otherwise increment PC normally 
-    assign PC_out = (instruction[6:0] == 7'b1100011 || instruction[6:0] == 7'b1100111 || instruction[6:0] == 7'b1101111) ? jbl_address_out : PC_in + 4;
+    assign PC_out = (instruction[6:0] == 7'b1100011 || instruction[6:0] == 7'b1100111 || instruction[6:0] == 7'b1101111) ? jbl_address_out : PC_in;
 
 endmodule

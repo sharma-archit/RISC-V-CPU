@@ -27,4 +27,3 @@ Writeback
 
 
 Currently, the initial design is complete. The project is now in the simulation phase.
-
