@@ -19,8 +19,8 @@ module decodeCycle #(
     output logic alu_enable,
     output logic [ALU_SEL_SIZE - 1:0] alu_sel,
     output logic [SHIFT_SIZE - 1: 0] alu_shift_amt,
-    output logic [XLEN-1:0] dec_alu_data_in_a,
-    output logic [XLEN-1:0] dec_alu_data_in_b,
+    output logic [XLEN-1:0] alu_data_in_a,
+    output logic [XLEN-1:0] alu_data_in_b,
 
     // incoming write signals from writeback stage
     input logic rf_writeback_enable,

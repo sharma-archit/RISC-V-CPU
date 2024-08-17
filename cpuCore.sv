@@ -116,6 +116,7 @@ always_ff @(posedge(clk)) begin : fetch_to_decode_ff
     else begin
 
         f_to_d_enable_ff_prev <= f_to_d_enable_ff;
+        PC_d[DECODE] <= PC[FETCH];
 
         // stall decode stage if f_to_d_enable_ff is deasserted and it was asserted the previous cycle
         if (f_to_d_enable_ff || !f_to_d_enable_ff_prev) begin
@@ -135,7 +136,7 @@ decodeCycle decode_cycle (
     .clk(clk),
     .rst(rst),
     .instruction(instruction_d[DECODE]),
-    .PC_in(PC[FETCH]),
+    .PC_in(PC_d[DECODE]),
     .PC_out(PC[DECODE]),
 
     .f_to_d_enable_ff(f_to_d_enable_ff),
@@ -145,8 +146,8 @@ decodeCycle decode_cycle (
     .alu_enable(alu_enable),
     .alu_sel(alu_sel),
     .alu_shift_amt(alu_shift_amt),
-    .dec_alu_data_in_a(dec_alu_data_in_a),
-    .dec_alu_data_in_b(dec_alu_data_in_b),
+    .alu_data_in_a(dec_alu_data_in_a),
+    .alu_data_in_b(dec_alu_data_in_b),
 
     // rf_writeback input signals passed directly from writeback stage to decode stage
     .rf_writeback_enable(rf_write_enable_d[WRITEBACK]),
@@ -310,7 +311,6 @@ always_ff @(posedge(clk)) begin : decode_to_execute_ff
     if (rst) begin
 
         d_to_e_enable_ff_prev <= '0;
-        PC_d[EXECUTE] <= '0;
         alu_enable_d[EXECUTE] <= '0;
         alu_sel_d[EXECUTE] <= '0;
         alu_shift_amt_d[EXECUTE] <= '0;
@@ -333,7 +333,6 @@ always_ff @(posedge(clk)) begin : decode_to_execute_ff
         // stall execute stage if d_to_e_enable_ff is deasserted and it was asserted the previous cycle
         if (d_to_e_enable_ff || !d_to_e_enable_ff_prev) begin
 
-            PC_d[EXECUTE] <= PC[DECODE];
             alu_enable_d[EXECUTE] <= alu_enable;
             alu_sel_d[EXECUTE] <= alu_sel;
             alu_shift_amt_d[EXECUTE] <= alu_shift_amt;
@@ -372,7 +371,6 @@ always_ff @(posedge(clk)) begin : execute_to_memaccess_ff
     if (rst) begin
         
         alu_data_out_d[MEMORY_ACCESS] <= '0;
-        PC_d[MEMORY_ACCESS] <= '0;
         rf_write_enable_d[MEMORY_ACCESS] <= '0;
         rf_write_addr_d[MEMORY_ACCESS] <= '0;
         rf_write_data_sel_d[MEMORY_ACCESS] <= '0;
@@ -388,7 +386,6 @@ always_ff @(posedge(clk)) begin : execute_to_memaccess_ff
         alu_data_out_d[MEMORY_ACCESS] <= alu_data_out;
 
         //All signals below simply flopped to next stage
-        PC_d[MEMORY_ACCESS] <= PC_d[EXECUTE];
 
         rf_write_enable_d[MEMORY_ACCESS] <= rf_write_enable_d[EXECUTE];
         rf_write_addr_d[MEMORY_ACCESS] <= rf_write_addr_d[EXECUTE];
@@ -424,7 +421,6 @@ always_ff @(posedge(clk)) begin : memaccess_to_writeback_FF
         rf_write_enable_d[WRITEBACK] <= '0;
         rf_write_data_sel_d[WRITEBACK] <= '0;
         rf_write_addr_d[WRITEBACK] <= '0;
-        PC_d[WRITEBACK] <= '0;
     end
 
     else begin
@@ -434,7 +430,6 @@ always_ff @(posedge(clk)) begin : memaccess_to_writeback_FF
         rf_write_enable_d[WRITEBACK] <= rf_write_enable_d[MEMORY_ACCESS];
         rf_write_data_sel_d[WRITEBACK] <= rf_write_data_sel_d[MEMORY_ACCESS];
         rf_write_addr_d[WRITEBACK] <= rf_write_addr_d[MEMORY_ACCESS];
-        PC_d[WRITEBACK] <= PC_d[MEMORY_ACCESS];
     end
 
 end : memaccess_to_writeback_FF
@@ -445,7 +440,6 @@ writeBackCycle write_back_cycle (
     .writeback_data_sel(rf_write_data_sel_d[WRITEBACK]),
     .writeback_data(rf_writeback_data),
     .alu_data_out(alu_data_out_d[WRITEBACK]),
-    .PC_in(PC_d[WRITEBACK]),
     .dm_read_data(dm_read_data_d[WRITEBACK])
 );
 

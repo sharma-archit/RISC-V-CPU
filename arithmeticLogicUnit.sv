@@ -10,7 +10,7 @@ module arithmeticLogicUnit #(parameter SEL_SIZE = 4,
     output logic [XLEN - 1:0] data_out    
     );
 
-enum {ADD, SUB, SLT, SLTU, ANDI, ORI, XORI, SLL, SRL, SRA, LUI, AUIPC} ALU_OP_E;
+enum {ADD, SUB, SLT, SLTU, ANDI, ORI, XORI, SLL, SRL, SRA, LUI, AUIPC} ALU_OP_E; //ANDI, ORI, and XORI are used to avoid using SystemVerilog keywords
 
 always_comb begin
 

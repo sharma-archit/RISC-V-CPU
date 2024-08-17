@@ -4,14 +4,13 @@ module writeBackCycle #(
     input [1:0] writeback_data_sel,
     output logic[XLEN-1:0] writeback_data,
     input [XLEN-1:0] alu_data_out,
-    input [XLEN-1:0] PC_in,
     input [XLEN-1:0] dm_read_data
 );
 
-    enum {ALU, DATA_MEM, PC} WRITEBACK_DATA_SEL;
+    enum {ALU, DATA_MEM} WRITEBACK_DATA_SEL;
     
     //NOTE make sure to implement the mux for data to write back to destination register
-    //This is where the bundle of register right signals are required
+    //This is where the bundle of register write signals are required
 always_comb begin
 
     writeback_data = '0;
@@ -25,11 +24,6 @@ always_comb begin
     
         writeback_data = dm_read_data;
 
-    end
-    else if (writeback_data_sel == PC) begin
-
-        writeback_data = PC_in;
-        
     end
     
 end

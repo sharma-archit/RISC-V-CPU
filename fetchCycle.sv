@@ -1,4 +1,4 @@
-module fetchCycle #(parameter XLEN = 32)           
+module fetchCycle #(parameter XLEN = 32)
 (   
     input clk,
     input rst,
@@ -11,19 +11,29 @@ module fetchCycle #(parameter XLEN = 32)
     input [XLEN-1:0] dbg_instr
 );
 
-// assign PC_out = rst ? 0 : PC_in + 4;
+logic count_start; //Force PC to start incrementing after PC = 0 for only one clock cycle starting at the first rising edge after reset deasserted 
 
-always_ff @(posedge clk) begin 
+always_ff @(posedge clk) begin
+
     if (rst) begin
+
         PC_out <= '0;
+        count_start <= '0;
+
     end
     else begin
-        PC_out <= PC_in + 4;
+
+        count_start <= '1;
+        
     end
+    
 end
 
+assign PC_out = count_start ? PC_in + 4 : '0;
+
+
 instructionMemory instruction_memory (
-    .addr(PC_in),
+    .addr(PC_out),
     .instruction(instruction),
     .dbg_wr_en(dbg_wr_en),
     .dbg_addr(dbg_addr),
