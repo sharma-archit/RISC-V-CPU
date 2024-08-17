@@ -18,7 +18,7 @@ if (enable) begin
 
     case (sel)
 
-        ADD: begin
+        ADD: begin 
 
             data_out = data_in_a + data_in_b;
 
