@@ -71,8 +71,8 @@ module decodeCycle #(
     
 
 regFile register_file (
-    //.clk(clk),
-    //.rst(rst),
+    .clk(clk),
+    .rst(rst),
     .write_enable(rf_writeback_enable),
     .read_enable1(rf_read_enable1),
     .read_enable2(rf_read_enable2),

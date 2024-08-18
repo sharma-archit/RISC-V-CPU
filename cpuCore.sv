@@ -150,8 +150,8 @@ decodeCycle decode_cycle (
     .alu_data_in_b(dec_alu_data_in_b),
 
     // rf_writeback input signals passed directly from writeback stage to decode stage
-    .rf_writeback_enable(rf_write_enable_d[WRITEBACK]),
-    .rf_writeback_addr(rf_write_addr_d[WRITEBACK]),
+    .rf_writeback_enable(rf_write_enable_d[MEMORY_ACCESS]),
+    .rf_writeback_addr(rf_write_addr_d[MEMORY_ACCESS]),
     .rf_writeback_data(rf_writeback_data),
     
     .rf_write_enable(rf_write_enable),
@@ -182,7 +182,7 @@ case (pipeline_forward_sel[A]) //Operand forwarding for alu_in_a
 
         if (instruction_d[DECODE][6:0] == 7'b1100011) begin
         
-            jbl_data_in1 = dm_read_data; 
+            jbl_data_in1 = dm_read_data;
             jbl_address_in = dec_jbl_address_in;
 
         end
@@ -412,35 +412,35 @@ memoryAccessCycle memory_access_cycle (
     .dm_data_bypass(dm_data_bypass)
 );
 
-// Memory Access -> Writeback Flop
-always_ff @(posedge(clk)) begin : memaccess_to_writeback_FF
+// // Memory Access -> Writeback Flop
+// always_ff @(posedge(clk)) begin : memaccess_to_writeback_FF
 
-    if (rst) begin
-        alu_data_out_d[WRITEBACK] <= '0;
-        dm_read_data_d[WRITEBACK] <= '0;
-        rf_write_enable_d[WRITEBACK] <= '0;
-        rf_write_data_sel_d[WRITEBACK] <= '0;
-        rf_write_addr_d[WRITEBACK] <= '0;
-    end
+//     if (rst) begin
+//         alu_data_out_d[WRITEBACK] <= '0;
+//         dm_read_data_d[WRITEBACK] <= '0;
+//         rf_write_enable_d[WRITEBACK] <= '0;
+//         rf_write_data_sel_d[WRITEBACK] <= '0;
+//         rf_write_addr_d[WRITEBACK] <= '0;
+//     end
 
-    else begin
-        alu_data_out_d[WRITEBACK] <= dm_data_bypass;
-        dm_read_data_d[WRITEBACK] <= dm_read_data;
-        //All signals below simply flopped to next stage
-        rf_write_enable_d[WRITEBACK] <= rf_write_enable_d[MEMORY_ACCESS];
-        rf_write_data_sel_d[WRITEBACK] <= rf_write_data_sel_d[MEMORY_ACCESS];
-        rf_write_addr_d[WRITEBACK] <= rf_write_addr_d[MEMORY_ACCESS];
-    end
+//     else begin
+//         alu_data_out_d[WRITEBACK] <= dm_data_bypass;
+//         dm_read_data_d[WRITEBACK] <= dm_read_data;
+//         //All signals below simply flopped to next stage
+//         rf_write_enable_d[WRITEBACK] <= rf_write_enable_d[MEMORY_ACCESS];
+//         rf_write_data_sel_d[WRITEBACK] <= rf_write_data_sel_d[MEMORY_ACCESS];
+//         rf_write_addr_d[WRITEBACK] <= rf_write_addr_d[MEMORY_ACCESS];
+//     end
 
-end : memaccess_to_writeback_FF
+// end : memaccess_to_writeback_FF
 
 /////////////// Writeback Cycle ///////////////
 
 writeBackCycle write_back_cycle (
-    .writeback_data_sel(rf_write_data_sel_d[WRITEBACK]),
+    .writeback_data_sel(rf_write_data_sel_d[MEMORY_ACCESS]),
     .writeback_data(rf_writeback_data),
-    .alu_data_out(alu_data_out_d[WRITEBACK]),
-    .dm_read_data(dm_read_data_d[WRITEBACK])
+    .alu_data_out(dm_data_bypass),
+    .dm_read_data(dm_read_data)
 );
 
 endmodule
