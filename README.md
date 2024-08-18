@@ -1,6 +1,6 @@
-# RISC-V CPU
+# 32-Bit RISC-V CPU
 
-This is a custom design of a CPU based on RISC-V. The design implements the RV32I base instruction set using the Harvard architecture.
+This is a custom design of a 32-bit CPU based on RISC-V. The design implements the RV32I base instruction set using the Harvard architecture.
 The CPU is a 5-stage pipelined processor with the stages: 
 
 Fetch
