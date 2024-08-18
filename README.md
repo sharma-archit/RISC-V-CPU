@@ -23,4 +23,4 @@ Writeback
 - The Writeback stage contains a mux to the register file.
 - The mux in the Writeback stage determines which data to pass into the RF.
 
-![RISCV CPU µArchitecture](https://github.com/user-attachments/assets/0b1ec73a-0e41-4508-8529-d7dde3b9d479)
+![RISCV CPU µArchitecture](https://github.com/user-attachments/assets/a8336a5a-7f6a-48df-bef9-6e34db3c50d7)
