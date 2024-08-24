@@ -11,7 +11,7 @@ const time CLK_PERIOD = 8;
 cpuCore cpu_core(.*);
 
     initial begin
-
+        //test
     end
     
     // clock generator
