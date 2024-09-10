@@ -32,13 +32,11 @@ def update_memory_grid(memory, memory_labels, memory_frame, window, updated_addr
         window.geometry("")  # Reset the window size to fit both grids
     else:
         memory_frame.grid_remove()
-        window.geometry("600x400")  # Set the window size to fit only the register grid
 
 def create_grid_window(registers, memory):
     window = tk.Tk()
     window.title("Register File and Data Memory Grid")
     window.configure(bg="black")
-    window.geometry("600x400")  # Initial size to fit only the register grid
 
     style = ttk.Style()
     style.configure("TLabel", font=("Arial", 12), padding=5, borderwidth=0, relief="flat", background="black", foreground="white")
@@ -47,16 +45,16 @@ def create_grid_window(registers, memory):
     register_labels = []
     for i in range(32):
         frame = tk.Frame(window, bg="black", bd=1, relief="solid", highlightbackground="white", highlightcolor="white", highlightthickness=1)
-        frame.grid(row=i//8, column=i%8, padx=10, pady=5, sticky="nsew")
+        frame.grid(row=i//8, column=i%8, padx=3, pady=2, sticky="nsew")
         label = ttk.Label(frame, text=f"R{i}", style="TLabel")
         label.grid(row=0, column=0, sticky="ew", padx=10)  # Center the register name with padding
 
-        # Create a separator with a fixed width and padding to avoid touching the walls
-        separator = tk.Frame(frame, height=2, bd=0, bg="white", width=40)  # Set a fixed width for the separator
-        separator.place(relx=0.5, rely=0.5, anchor="center")  # Center the separator within the frame
-        
+        separator = tk.Frame(frame, height=2, bd=0, bg="white")
+        separator.grid(row=1, column=0, sticky="nsew", padx=5, pady=2)  # Use grid to center the separator within the frame
+        frame.grid_columnconfigure(0, weight=1)
+
         value_label = ttk.Label(frame, text="", style="TLabel")
-        value_label.grid(row=2, column=0, sticky="ew")
+        value_label.grid(row=2, column=0, sticky="nsew")
         register_labels.append(value_label)
 
     memory_frame = tk.Frame(window, bg="black")
@@ -64,16 +62,16 @@ def create_grid_window(registers, memory):
     row = 0
     for addr, value in memory.items():
         frame = tk.Frame(memory_frame, bg="black", bd=1, relief="solid", highlightbackground="white", highlightcolor="white", highlightthickness=1)
-        frame.grid(row=row, column=0, padx=10, pady=5, sticky="nsew")
+        frame.grid(row=row, column=0, padx=3, pady=2, sticky="nsew")
         label = ttk.Label(frame, text=f"Addr {addr}", style="TLabel")
         label.grid(row=0, column=0, sticky="ew", padx=10)  # Center the address name with padding
         
         # Create a separator with a fixed width and padding to avoid touching the walls
-        separator = tk.Frame(frame, height=2, bd=0, bg="white", width=20)  # Set a fixed width for the separator
-        separator.place(relx=0.1, rely=0.5, anchor="center")  # Center the separator within the frame
+        separator = tk.Frame(frame, height=2, bd=0, bg="white")  # Set a fixed width for the separator
+        separator.grid(row=1, column=0, sticky="nsew", padx=5, pady=2)
         
-        value_label = ttk.Label(frame, text=value, style="TLabel")
-        value_label.grid(row=2, column=0, sticky="ew")
+        value_label = ttk.Label(frame, text="", style="TLabel")
+        value_label.grid(row=2, column=0, sticky="nsew")
         memory_labels[addr] = value_label
         value_label.grid_remove()  # Initially hide all memory addresses
         row += 1
@@ -137,3 +135,4 @@ def update_register_values(instr, rs2, rs1, rd, imm, registers, memory, written_
         written_registers.add(rd)
     elif instr in ['SW', 'SH', 'SB']:
         memory[imm + registers[rs1]] = registers[rs2]
+    registers[0] = 0

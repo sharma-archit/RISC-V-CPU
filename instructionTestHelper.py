@@ -1,7 +1,6 @@
 from instructionTestHelperCoreFunctions import create_instruction, get_valid_input
 from instructionTestHelperGUI import update_register_grid, update_memory_grid, create_grid_window, update_register_values
-import tkinter as tk
-from tkinter import ttk
+import configparser
 
 # Define the RISC-V instruction set with proper values
 instruction_set = {
@@ -43,6 +42,11 @@ instruction_set = {
     'SH':   {'type': 'S', 'funct3': '001', 'opcode': '0100011'},
     'SB':   {'type': 'S', 'funct3': '000', 'opcode': '0100011'}
 }
+
+# Read the configuration file
+config = configparser.ConfigParser()
+config.read('config.ini')
+testbench_file = config['Paths']['testbench_file']
 
 # Initialize registers and memory
 registers = [0] * 32
@@ -96,7 +100,6 @@ while True:
 # Ensure the instructions list is not empty before writing to the testbench file
 if instructions:
     # Write the binary instructions to the testbench file
-    testbench_file = "S:/RISC-V CPU/Project Files/cpuCore_tb.sv"
     with open(testbench_file, 'r') as file:
         lines = file.readlines()
 
