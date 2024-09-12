@@ -7,36 +7,17 @@ def update_register_grid(registers, grid_labels, written_registers):
             value = registers[i]
             style = "Highlighted.TLabel" if value != 0 else "TLabel"
             grid_labels[i].config(text=value, style=style)
-            grid_labels[i].grid()  # Show the label
+            grid_labels[0] = 0
+            grid_labels[i].grid()
         else:
-            grid_labels[i].grid_remove()  # Hide the label
+            grid_labels[i].grid_remove()
 
-def update_memory_grid(memory, memory_labels, memory_frame, window, updated_addr=None):
-    if updated_addr is not None:
-        value = memory.get(updated_addr, "0")
-        style = "Highlighted.TLabel" if value != "0" else "TLabel"
-        memory_labels[updated_addr].config(text=value, style=style)
-        memory_labels[updated_addr].grid()
-    else:
-        for addr, label in memory_labels.items():
-            value = memory.get(addr, "0")
-            style = "Highlighted.TLabel" if value != "0" else "TLabel"
-            label.config(text=value, style=style)
-            if value != "0":
-                label.grid()
-            else:
-                label.grid_remove()
-
-    if any(memory.values()):
-        memory_frame.grid()
-        window.geometry("")  # Reset the window size to fit both grids
-    else:
-        memory_frame.grid_remove()
-
-def create_grid_window(registers, memory):
+def create_grid_window():
     window = tk.Tk()
     window.title("Register File and Data Memory Grid")
     window.configure(bg="black")
+
+    window.maxsize(1080, 1872)
 
     style = ttk.Style()
     style.configure("TLabel", font=("Arial", 12), padding=5, borderwidth=0, relief="flat", background="black", foreground="white")
@@ -45,47 +26,26 @@ def create_grid_window(registers, memory):
     register_labels = []
     for i in range(32):
         frame = tk.Frame(window, bg="black", bd=1, relief="solid", highlightbackground="white", highlightcolor="white", highlightthickness=1)
-        frame.grid(row=i//8, column=i%8, padx=3, pady=2, sticky="nsew")
+        frame.grid(row=i//8, column=i%8, padx=5, pady=5, sticky="nsew")
         label = ttk.Label(frame, text=f"R{i}", style="TLabel")
-        label.grid(row=0, column=0, sticky="ew", padx=10)  # Center the register name with padding
+        label.grid(row=0, column=0, sticky="ew", padx=10)
 
         separator = tk.Frame(frame, height=2, bd=0, bg="white")
-        separator.grid(row=1, column=0, sticky="nsew", padx=5, pady=2)  # Use grid to center the separator within the frame
+        separator.grid(row=1, column=0, sticky="nsew", padx=5, pady=2)
         frame.grid_columnconfigure(0, weight=1)
 
         value_label = ttk.Label(frame, text="", style="TLabel")
         value_label.grid(row=2, column=0, sticky="nsew")
         register_labels.append(value_label)
 
-    memory_frame = tk.Frame(window, bg="black")
-    memory_labels = {}
-    row = 0
-    for addr, value in memory.items():
-        frame = tk.Frame(memory_frame, bg="black", bd=1, relief="solid", highlightbackground="white", highlightcolor="white", highlightthickness=1)
-        frame.grid(row=row, column=0, padx=3, pady=2, sticky="nsew")
-        label = ttk.Label(frame, text=f"Addr {addr}", style="TLabel")
-        label.grid(row=0, column=0, sticky="ew", padx=10)  # Center the address name with padding
-        
-        # Create a separator with a fixed width and padding to avoid touching the walls
-        separator = tk.Frame(frame, height=2, bd=0, bg="white")  # Set a fixed width for the separator
-        separator.grid(row=1, column=0, sticky="nsew", padx=5, pady=2)
-        
-        value_label = ttk.Label(frame, text="", style="TLabel")
-        value_label.grid(row=2, column=0, sticky="nsew")
-        memory_labels[addr] = value_label
-        value_label.grid_remove()  # Initially hide all memory addresses
-        row += 1
-
-    memory_frame.grid_remove()
-
     for i in range(8):
         window.grid_columnconfigure(i, weight=1)
     for i in range(4):
         window.grid_rowconfigure(i, weight=1)
 
-    return window, register_labels, memory_labels, memory_frame
+    return window, register_labels
 
-def update_register_values(instr, rs2, rs1, rd, imm, registers, memory, written_registers):
+def update_grid_values(instr, rs2, rs1, rd, imm, registers, register_labels, memory, written_registers):
 # Update the registers based on the instruction and track written registers
     if instr in ['ADDI', 'SLTI', 'SLTIU', 'ANDI', 'ORI', 'XORI']:
         registers[rd] = registers[rs1] + imm
@@ -131,8 +91,16 @@ def update_register_values(instr, rs2, rs1, rd, imm, registers, memory, written_
             registers[rd] = imm
         written_registers.add(rd)
     elif instr in ['LW', 'LH', 'LHU', 'LB', 'LBU']:
-        registers[rd] = memory.get(imm + registers[rs1], 0)
+        registers[rd] = get_register_value(imm + registers[rs1], register_labels)
         written_registers.add(rd)
     elif instr in ['SW', 'SH', 'SB']:
-        memory[imm + registers[rs1]] = registers[rs2]
-    registers[0] = 0
+        memory['address'] = imm + registers[rs1]
+        memory['value'] = registers[rs2]
+
+def get_register_value(register_number, register_labels):
+    value_label = register_labels[register_number]
+    value_text = value_label.cget("text")
+    if value_text:
+        value = int(value_text)
+        return value
+    return None

@@ -1,5 +1,5 @@
 from instructionTestHelperCoreFunctions import create_instruction, get_valid_input
-from instructionTestHelperGUI import update_register_grid, update_memory_grid, create_grid_window, update_register_values
+from instructionTestHelperGUI import update_register_grid, create_grid_window, update_grid_values
 import configparser
 
 # Define the RISC-V instruction set with proper values
@@ -50,7 +50,7 @@ testbench_file = config['Paths']['testbench_file']
 
 # Initialize registers and memory
 registers = [0] * 32
-memory = {i: 0 for i in range(0, 1024, 4)}  # Example memory initialization
+memory = {}
 
 # Initialize the instructions list
 instructions = []
@@ -59,7 +59,7 @@ instructions = []
 written_registers = set()
 
 # Create the grid window
-window, register_labels, memory_labels, memory_frame = create_grid_window(registers, memory)
+window, register_labels = create_grid_window()
 
 # Get user input for multiple instructions
 while True:
@@ -88,14 +88,9 @@ while True:
     binary_instruction = create_instruction(instruction_set, instr, rs2, rs1, rd, imm)
     instructions.append(binary_instruction)
 
-    update_register_values(instr, rs2, rs1, rd, imm, registers, memory, written_registers)
+    update_grid_values(instr, rs2, rs1, rd, imm, registers,register_labels, memory, written_registers)
 
-    # Update the grid with the new register values
     update_register_grid(registers, register_labels, written_registers)
-    update_memory_grid(memory, memory_labels, memory_frame, window)
-
-    # Example usage: update a specific address
-    update_memory_grid(memory, memory_labels, memory_frame, window, updated_addr=0)
 
 # Ensure the instructions list is not empty before writing to the testbench file
 if instructions:
@@ -136,5 +131,4 @@ if instructions:
 else:
     print("No instructions to write to the testbench file.")
 
-# Start the Tkinter main loop
 window.mainloop()
