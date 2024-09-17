@@ -1,46 +1,126 @@
 from instructionTestHelperCoreFunctions import create_instruction, get_valid_input
-from instructionTestHelperGUI import update_register_grid, create_grid_window, update_grid_values
+from instructionTestHelperGUI import update_grid, create_grid_window, update_grid_values
 import configparser
 
 # Define the RISC-V instruction set with proper values
 instruction_set = {
-    'ADDI': {'type': 'I', 'funct3': '000', 'opcode': '0010011'},
-    'SLTI': {'type': 'I', 'funct3': '010', 'opcode': '0010011'},
-    'SLTIU': {'type': 'I', 'funct3': '011', 'opcode': '0010011'},
-    'ANDI': {'type': 'I', 'funct3': '000', 'opcode': '0010011'},
-    'ORI': {'type': 'I', 'funct3': '000', 'opcode': '0010011'},
-    'XORI': {'type': 'I', 'funct3': '000', 'opcode': '0010011'},
-    'SLLI': {'type': 'I', 'funct3': '001', 'opcode': '0010011', 'special': True},
-    'SRLI': {'type': 'I', 'funct3': '101', 'opcode': '0010011', 'special': True},
-    'SRAI': {'type': 'I', 'funct3': '101', 'opcode': '0010011', 'special': True},
-    'LUI':  {'type': 'U', 'opcode': '0110111'},
-    'AUIPC':{'type': 'U', 'opcode': '0010111'},
-    'ADD': {'type': 'R', 'funct7': '0000000', 'funct3': '000', 'opcode': '0110011'},
-    'SLT': {'type': 'R', 'funct7': '0000000', 'funct3': '010', 'opcode': '0110011'},
-    'SLTU': {'type': 'R', 'funct7': '0000000', 'funct3': '011', 'opcode': '0110011'},
-    'AND': {'type': 'R', 'funct7': '0000000', 'funct3': '111', 'opcode': '0110011'},
-    'OR':  {'type': 'R', 'funct7': '0000000', 'funct3': '110', 'opcode': '0110011'},
-    'XOR': {'type': 'R', 'funct7': '0000000', 'funct3': '100', 'opcode': '0110011'},
-    'SLL': {'type': 'R', 'funct7': '0000000', 'funct3': '001', 'opcode': '0110011'},
-    'SRL': {'type': 'R', 'funct7': '0000000', 'funct3': '101', 'opcode': '0110011'},
-    'SUB': {'type': 'R', 'funct7': '0100000', 'funct3': '000', 'opcode': '0110011'},
-    'SRA': {'type': 'R', 'funct7': '0100000', 'funct3': '101', 'opcode': '0110011'},
-    'JAL':  {'type': 'J', 'opcode': '1101111'},
-    'JALR': {'type': 'I', 'funct3': '000', 'opcode': '1100111'},
-    'BEQ':  {'type': 'B', 'funct3': '000', 'opcode': '1100011'},
-    'BNE':  {'type': 'B', 'funct3': '001', 'opcode': '1100011'},
-    'BLT':  {'type': 'B', 'funct3': '100', 'opcode': '1100011'},
-    'BLTU': {'type': 'B', 'funct3': '110', 'opcode': '1100011'},
-    'BGE':  {'type': 'B', 'funct3': '101', 'opcode': '1100011'},
-    'BGEU': {'type': 'B', 'funct3': '111', 'opcode': '1100011'},
-    'LW':   {'type': 'I', 'funct3': '010', 'opcode': '0000011'},
-    'LH':   {'type': 'I', 'funct3': '001', 'opcode': '0000011'},
-    'LHU':  {'type': 'I', 'funct3': '101', 'opcode': '0000011'},
-    'LB':   {'type': 'I', 'funct3': '000', 'opcode': '0000011'},
-    'LBU':  {'type': 'I', 'funct3': '100', 'opcode': '0000011'},
-    'SW':   {'type': 'S', 'funct3': '010', 'opcode': '0100011'},
-    'SH':   {'type': 'S', 'funct3': '001', 'opcode': '0100011'},
-    'SB':   {'type': 'S', 'funct3': '000', 'opcode': '0100011'}
+    'ADDI': {'type': 'I', 'funct3': '000', 'opcode': '0010011',
+             'imm': 'Enter the first number to ADD: ',
+             'rs1': 'Enter the register location of the second number to ADD: '},
+    'SLTI': {'type': 'I', 'funct3': '010', 'opcode': '0010011',
+             'imm': 'Enter the immediate value: ',
+             'rs1': 'Enter the register location of the value you want to compare to the immediate value: '},
+    'SLTIU': {'type': 'I', 'funct3': '011', 'opcode': '0010011',
+             'imm': 'Enter the immediate value: ',
+             'rs1': 'Enter the register location of the value you want to compare to the immediate value: '},
+    'ANDI': {'type': 'I', 'funct3': '000', 'opcode': '0010011',
+             'imm': 'Enter the first number to AND: ',
+             'rs1': 'Enter the second number to AND: '},
+    'ORI': {'type': 'I', 'funct3': '000', 'opcode': '0010011',
+             'imm': 'Enter the first number to OR: ',
+             'rs1': 'Enter the second number to OR: '},
+    'XORI': {'type': 'I', 'funct3': '000', 'opcode': '0010011',
+             'imm': 'Enter the first number to XOR: ',
+             'rs1': 'Enter the second number to XOR: '},
+    'SLLI': {'type': 'I', 'funct3': '001', 'opcode': '0010011', 'special': True,
+             'imm': 'Enter amount to shift by: ',
+             'rs1': 'Enter register location of value to shift: '},
+    'SRLI': {'type': 'I', 'funct3': '101', 'opcode': '0010011', 'special': True,
+             'imm': 'Enter amount to shift by: ',
+             'rs1': 'Enter register location of value to shift: '},
+    'SRAI': {'type': 'I', 'funct3': '101', 'opcode': '0010011', 'special': True,
+             'imm': 'Enter amount to shift by: ',
+             'rs1': 'Enter register location of value to shift: '},
+    'LUI':  {'type': 'U', 'opcode': '0110111',
+             'imm': 'Enter immediate value: '},
+    'AUIPC':{'type': 'U', 'opcode': '0010111',
+             'imm': 'Enter immediate value: '},
+    'ADD': {'type': 'R', 'funct7': '0000000', 'funct3': '000', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the first value to ADD: ',
+             'rs2': 'Enter the register location of the second value of ADD: '},
+    'SLT': {'type': 'R', 'funct7': '0000000', 'funct3': '010', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the value to compare to: ',
+             'rs2': 'Enter the register location of the value to compare: '},
+    'SLTU': {'type': 'R', 'funct7': '0000000', 'funct3': '011', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the value to compare to: ',
+             'rs2': 'Enter the register location of the value to compare: '},
+    'AND': {'type': 'R', 'funct7': '0000000', 'funct3': '111', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the first value to AND: ',
+             'rs2': 'Enter the register location of the second value to AND: '},
+    'OR':  {'type': 'R', 'funct7': '0000000', 'funct3': '110', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the first value to OR: ',
+             'rs2': 'Enter the register location of the second value to OR: '},
+    'XOR': {'type': 'R', 'funct7': '0000000', 'funct3': '100', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the first value to XOR: ',
+             'rs2': 'Enter the register location of the second value to XOR: '},
+    'SLL': {'type': 'R', 'funct7': '0000000', 'funct3': '001', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the value to shift: ',
+             'rs2': 'Enter the register location of the amount to shift by: '},
+    'SRL': {'type': 'R', 'funct7': '0000000', 'funct3': '101', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the value to shift: ',
+             'rs2': 'Enter the register location of the amount to shift by: '},
+    'SUB': {'type': 'R', 'funct7': '0100000', 'funct3': '000', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the value to subtract by: ',
+             'rs2': 'Enter the register location of the value to subtract: '},
+    'SRA': {'type': 'R', 'funct7': '0100000', 'funct3': '101', 'opcode': '0110011',
+             'rs1': 'Enter the register location of the value to shift: ',
+             'rs2': 'Enter the register location of the amount to shift by: '},
+    'JAL':  {'type': 'J', 'opcode': '1101111',
+             'imm': 'Enter the value to calculate the jump address: '},
+    'JALR': {'type': 'I', 'funct3': '000', 'opcode': '1100111',
+             'imm': 'Enter the first value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the second value to calculate the jump address: '},
+    'BEQ':  {'type': 'B', 'funct3': '000', 'opcode': '1100011',
+             'imm': 'Enter the value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the value to compare: ',
+             'rs2': 'Enter the register location of the value to compare to: '},
+    'BNE':  {'type': 'B', 'funct3': '001', 'opcode': '1100011',
+             'imm': 'Enter the value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the value to compare: ',
+             'rs2': 'Enter the register location of the value to compare to: '},
+    'BLT':  {'type': 'B', 'funct3': '100', 'opcode': '1100011',
+             'imm': 'Enter the value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the value to compare: ',
+             'rs2': 'Enter the register location of the value to compare to: '},
+    'BLTU': {'type': 'B', 'funct3': '110', 'opcode': '1100011',
+             'imm': 'Enter the value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the value to compare: ',
+             'rs2': 'Enter the register location of the value to compare to: '},
+    'BGE':  {'type': 'B', 'funct3': '101', 'opcode': '1100011',
+             'imm': 'Enter the value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the value to compare: ',
+             'rs2': 'Enter the register location of the value to compare to: '},
+    'BGEU': {'type': 'B', 'funct3': '111', 'opcode': '1100011',
+             'imm': 'Enter the value to calculate the jump address: ',
+             'rs1': 'Enter the register location of the value to compare: ',
+             'rs2': 'Enter the register location of the value to compare to: '},
+    'LW':   {'type': 'I', 'funct3': '010', 'opcode': '0000011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: '},
+    'LH':   {'type': 'I', 'funct3': '001', 'opcode': '0000011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: '},
+    'LHU':  {'type': 'I', 'funct3': '101', 'opcode': '0000011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: '},
+    'LB':   {'type': 'I', 'funct3': '000', 'opcode': '0000011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: '},
+    'LBU':  {'type': 'I', 'funct3': '100', 'opcode': '0000011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: '},
+    'SW':   {'type': 'S', 'funct3': '010', 'opcode': '0100011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: ',
+             'rs2': 'Enter the register location of the value to move to memory'},
+    'SH':   {'type': 'S', 'funct3': '001', 'opcode': '0100011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: ',
+             'rs2': 'Enter the register location of the value to move to memory'},
+    'SB':   {'type': 'S', 'funct3': '000', 'opcode': '0100011',
+             'imm': 'Enter the first value to calculate the memory address: ',
+             'rs1': 'Enter the register location of the second value to calculate the memory address: ',
+             'rs2': 'Enter the register location of the value to move to memory'},
 }
 
 # Read the configuration file
@@ -49,8 +129,10 @@ config.read('config.ini')
 testbench_file = config['Paths']['testbench_file']
 
 # Initialize registers and memory
-registers = [0] * 32
+grid = [0] * 32
 memory = {}
+
+memory_grid_column = -1
 
 # Initialize the instructions list
 instructions = []
@@ -59,7 +141,7 @@ instructions = []
 written_registers = set()
 
 # Create the grid window
-window, register_labels = create_grid_window()
+window, grid_labels = create_grid_window(grid)
 
 # Get user input for multiple instructions
 while True:
@@ -74,23 +156,22 @@ while True:
     rs2 = rs1 = rd = imm = None
 
     if instruction_set[instr]['type'] in ['I', 'S', 'B']:
-        imm = get_valid_input("Enter the immediate value: ", -2048, 2047)  # 12-bit signed immediate
+        imm = get_valid_input(instruction_set[instr]['imm'], -2048, 2047)  # 12-bit signed immediate
     elif instruction_set[instr]['type'] in ['U', 'J']:
-        imm = get_valid_input("Enter the immediate value: ", 0, 1048575)  # 20-bit unsigned immediate
-
+        imm = get_valid_input(instruction_set[instr]['imm'], 0, 1048575)  # 20-bit unsigned immediate
     if instruction_set[instr]['type'] in ['R', 'I', 'S', 'B']:
-        rs1 = get_valid_input("Enter the address for the first source register (0-31): ", 0, 31)
+        rs1 = get_valid_input(instruction_set[instr]['rs1'], 0, 31)
     if instruction_set[instr]['type'] in ['R', 'S', 'B']:
-        rs2 = get_valid_input("Enter the address for the second source register (0-31): ", 0, 31)
+        rs2 = get_valid_input(instruction_set[instr]['rs2'], 0, 31)
     if instruction_set[instr]['type'] in ['R', 'I', 'U', 'J']:
-        rd = get_valid_input("Enter the address for the destination register (0-31): ", 0, 31)
+        rd = get_valid_input("Enter the register location to store the output: ", 0, 31)
 
     binary_instruction = create_instruction(instruction_set, instr, rs2, rs1, rd, imm)
     instructions.append(binary_instruction)
 
-    update_grid_values(instr, rs2, rs1, rd, imm, registers,register_labels, memory, written_registers)
+    update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory)
 
-    update_register_grid(registers, register_labels, written_registers)
+    memory_grid_column, grid_labels = update_grid(grid, grid_labels, memory, memory_grid_column, window)
 
 # Ensure the instructions list is not empty before writing to the testbench file
 if instructions:
