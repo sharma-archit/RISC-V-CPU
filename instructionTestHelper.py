@@ -134,6 +134,8 @@ memory = {}
 
 memory_grid_column = -1
 
+PC = 0
+
 # Initialize the instructions list
 instructions = []
 
@@ -169,7 +171,9 @@ while True:
     binary_instruction = create_instruction(instruction_set, instr, rs2, rs1, rd, imm)
     instructions.append(binary_instruction)
 
-    update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory)
+    update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC)
+
+    PC += 4
 
     memory_grid_column, grid_labels = update_grid(grid, grid_labels, memory, memory_grid_column, window)
 
