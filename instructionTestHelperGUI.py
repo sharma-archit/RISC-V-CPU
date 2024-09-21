@@ -76,7 +76,7 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'SLTI':
         grid[rd] = 1 if grid[rs1] < imm else 0
     elif instr == 'SLTIU':
-        grid[rd] = 1 if convert_to_unsigned(grid[rs1]) < imm else 0
+        grid[rd] = 1 if convert_to_unsigned(grid[rs1]) < convert_to_unsigned(imm) else 0
     elif instr == 'ANDI':
         grid[rd] = grid[rs1] & imm
     elif instr == 'ORI':
@@ -121,7 +121,7 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
         grid[rd] = sign_extend(get_memory_value(imm + grid[rs1], grid_labels), 8)
     elif instr == 'LBU':
         grid[rd] = get_memory_value(imm + grid[rs1], grid_labels) & 0x000000FF
-    elif instr in ['SW', 'SH', 'SB']:
+    elif instr == 'SW':
         memory[rs1 + imm] = grid[rs2]
     elif instr == 'SH':
         memory[rs1 + imm] = sign_extend(grid[rs2] & 0x0000FFFF, 16)
