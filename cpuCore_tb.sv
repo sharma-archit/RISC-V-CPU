@@ -12,6 +12,59 @@ cpuCore cpu_core(.*);
 
     initial begin
 
+    rst = 1;
+    dbg_wr_en = 0;
+    dbg_addr = 0;
+    dbg_instr = 32'b00000010000000000000000010010011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    dbg_addr = 4;
+    dbg_instr = 32'b00000000000100000010000100000011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    dbg_addr = 8;
+    dbg_instr = 32'b00000000000100000010000010100011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    dbg_addr = 12;
+    dbg_instr = 32'b00000000110000001000000110010011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    dbg_addr = 16;
+    dbg_instr = 32'b00000000001100000010000100100011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    dbg_addr = 20;
+    dbg_instr = 32'b00000000001100000010000100100011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    dbg_addr = 24;
+    dbg_instr = 32'b00000000000100000010000100000011;
+    #(2*CLK_PERIOD)
+    dbg_wr_en = 1;
+    #CLK_PERIOD
+    dbg_wr_en = 0;
+    #CLK_PERIOD
+    rst = 0;
+
     end
     
     // clock generator

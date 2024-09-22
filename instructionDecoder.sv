@@ -33,9 +33,9 @@ module instructionDecoder #(parameter XLEN = 32,
     output logic [FUNCT3_SIZE - 1:0] jbl_operation,
     output logic [JALR_OFFSET_SIZE - 1:0] jbl_offset,
     output logic [JAL_OFFSET_SIZE-1:0] jbl_jal_offset,
-    output logic [XLEN-1:0] dec_jbl_data_in1,
-    output logic [XLEN-1:0] dec_jbl_data_in2,
-    output logic [XLEN-1:0] dec_jbl_address_in,
+    output logic [XLEN-1:0] jbl_data_in1,
+    output logic [XLEN-1:0] jbl_data_in2,
+    output logic [XLEN-1:0] jbl_address_in,
 
     output logic rf_read_enable1,
     output logic rf_read_enable2,
@@ -51,9 +51,12 @@ module instructionDecoder #(parameter XLEN = 32,
     output logic dm_read_enable,
     output logic dm_write_enable,
     output logic [XLEN-1:0] dm_write_data,
-    output logic [2:0] dm_load_type
+    output logic [2:0] dm_load_type,
 
-); 
+    // data hazard control signals
+    output logic f_to_d_enable_ff,
+    output logic d_to_e_enable_ff
+);
 
 // 7-bit opcodes //
 // stand-alone instructions
@@ -64,7 +67,7 @@ const logic [6:0] JALR   = 7'b1100111;
 const logic [6:0] FENCE  = 7'b0001111;
 // instruction groups
 const logic [6:0] BRANCH = 7'b1100011;
-const logic [6:0] LOAD  =  7'b0000011;
+const logic [6:0] LOAD   =  7'b0000011;
 const logic [6:0] STORE  = 7'b0100011;
 const logic [6:0] IRII   = 7'b0010011;
 const logic [6:0] IRRO   = 7'b0110011;
@@ -91,9 +94,9 @@ always_comb begin : decoder
     jbl_operation = '0;
     jbl_offset = '0;
     jbl_jal_offset = '0;
-    dec_jbl_data_in1 = '0;
-    dec_jbl_data_in2 = '0;
-    dec_jbl_address_in = '0;
+    jbl_data_in1 = '0;
+    jbl_data_in1 = '0;
+    jbl_address_in = '0;
 
     rf_read_enable1 = '0;
     rf_read_enable2 = '0;
@@ -154,7 +157,7 @@ always_comb begin : decoder
 
             jbl_operation = JBL_JAL;
             jbl_jal_offset = {instruction[31], instruction[19:12], instruction[20], instruction[30:21]};
-            dec_jbl_address_in = PC_in; //Make sure the PC value is the value of the JAL instruction
+            jbl_address_in = PC_in; //Make sure the PC value is the value of the JAL instruction
 
             rf_write_enable = 1;
             rf_write_addr = instruction[DESTINATION_REGISTER_LOC - 1:DESTINATION_REGISTER_LOC - REGISTER_SIZE];
@@ -175,7 +178,7 @@ always_comb begin : decoder
             
             jbl_operation = JBL_JALR;
             jbl_offset = instruction[XLEN-1:XLEN - JALR_OFFSET_SIZE];
-            dec_jbl_address_in = rf_read_data1;
+            jbl_address_in = rf_read_data1;
 
             // read register rs1, write PC+4 to register rd
             rf_read_enable1 = 1;
@@ -193,9 +196,9 @@ always_comb begin : decoder
         BRANCH: begin
 
             jbl_offset = {instruction[31], instruction[7], instruction[30:25], instruction[11:8]}; //Reordered immediate value
-            dec_jbl_data_in1 = rf_read_data1;
-            dec_jbl_data_in2 = rf_read_data2;
-            dec_jbl_address_in = PC_in; //PC value of the branch instruction being decoded
+            jbl_data_in1 = rf_read_data1;
+            jbl_data_in1 = rf_read_data2;
+            jbl_address_in = PC_in; //PC value of the branch instruction being decoded
 
             rf_read_enable1 = 1;
             rf_read_enable2 = 1;

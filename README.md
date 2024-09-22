@@ -9,7 +9,7 @@ Fetch
 
 Decode
 - The Decode stage contains the instruction decoder, register file (RF), jump branch logic (JBL), and data hazard mitigation logic (DHML).
-- The instruction decoder generates the control signals for the datapath. The RF stores recent data. The JBL looks at the current instruction to determine if it is a jump instruction or branch instruction, and to take it or not. The DHML looks at the current and previous two instructions to determine if there is a data hazard. If action is required it freezes pipeline stages and/or forwards data.
+- The instruction decoder generates the control signals for the datapath. The RF stores recent data. The JBL looks at the current instruction to determine if it is a jump instruction or branch instruction, and to take it or not. The DHML looks at the current and previous two instructions to determine if there is a data hazard. If action is required it freezes pipeline stages and/or forwards output data from previous conflicting instructions that have not reached the Writeback stage.
 
 Execute
 - The Execute stage contains the arithmetic logic unit (ALU).

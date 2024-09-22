@@ -106,7 +106,7 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'SRL':
         grid[rd] = logical_right_shift(grid[rs1], grid[rs2])
     elif instr == 'SUB':
-        grid[rd] = grid[rs1] - grid[rs2]
+        grid[rd] = grid[rs2] - grid[rs1]
     elif instr == 'SRA':
         grid[rd] = (grid[rs1] >> grid[rs2]) & 0xFFFFFFFF
     elif instr in ['JAL', 'JALR']:
