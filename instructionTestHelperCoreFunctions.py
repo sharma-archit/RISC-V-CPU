@@ -1,6 +1,3 @@
-def get_binary_string(value, bits):
-    return format(value, f'0{bits}b')
-
 def create_instruction(instruction_set, instr, rs2=None, rs1=None, rd=None, imm=None):
     if instr not in instruction_set:
         raise ValueError(f"Instruction {instr} not supported")
@@ -70,3 +67,9 @@ def get_valid_input(prompt, min_value, max_value):
                 print(f"Please enter a value between {min_value} and {max_value}.")
         except ValueError:
             print("Invalid input. Please enter an integer.")
+
+def get_binary_string(value, bits):
+    if value < 0:
+        value = (1 << bits) + value
+
+    return format(value, f'0{bits}b')

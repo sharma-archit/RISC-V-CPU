@@ -84,17 +84,21 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'XORI':
         grid[rd] = grid[rs1] ^ imm
     elif instr == 'SLLI':
-        grid[rd] = grid[rs1] << (imm & 0b000000011111)
+        grid[rd] = grid[rs1] << (imm & 0b11111)
     elif instr == 'SRLI':
-        grid[rd] = logical_right_shift(grid[rs1], (imm & 0b000000011111))
+        grid[rd] = logical_right_shift(grid[rs1], (imm & 0b11111))
     elif instr == 'SRAI':
-        grid[rd] = grid[rs1] >> (imm & 0b000000011111)
+        grid[rd] = grid[rs1] >> (imm & 0b11111)
     elif instr == 'LUI':
-        grid[rd] = (imm << 12) & 0xFFFFF000  # Ensure the result stays within 32 bits
+        grid[rd] = (imm << 12) & 0xFFFFF000
     elif instr in ['AUIPC']:
-        grid[rd] = imm + grid[rs1]
+        grid[rd] = imm + PC
     elif instr == 'ADD':
         grid[rd] = grid[rs1] + grid[rs2]
+    elif instr == 'SLT':
+        grid[rd] = 1 if grid[rs1] < imm else 0
+    elif instr == 'SLTU':
+        grid[rd] = 1 if convert_to_unsigned(grid[rs1]) < convert_to_unsigned(imm) else 0
     elif instr == 'AND':
         grid[rd] = grid[rs1] & grid[rs2]
     elif instr == 'OR':
@@ -102,33 +106,33 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'XOR':
         grid[rd] = grid[rs1] ^ grid[rs2]
     elif instr == 'SLL':
-        grid[rd] = (grid[rs1] << grid[rs2]) & 0xFFFFFFFF
+        grid[rd] = (grid[rs1] << grid[rs2])
     elif instr == 'SRL':
         grid[rd] = logical_right_shift(grid[rs1], grid[rs2])
     elif instr == 'SUB':
         grid[rd] = grid[rs2] - grid[rs1]
     elif instr == 'SRA':
-        grid[rd] = (grid[rs1] >> grid[rs2]) & 0xFFFFFFFF
+        grid[rd] = grid[rs1] >> grid[rs2]
     elif instr in ['JAL', 'JALR']:
         grid[rd] = PC + 4
     elif instr == 'LW':
         grid[rd] = get_memory_value(imm + grid[rs1], grid_labels)
     elif instr == 'LH':
-        grid[rd] = sign_extend(get_memory_value(imm + grid[rs1], grid_labels), 16)
+        grid[rd] = get_memory_value(imm + grid[rs1], grid_labels, 16)
     elif instr == 'LHU':
-        grid[rd] = get_memory_value(imm + grid[rs1], grid_labels) & 0x0000FFFF
+        grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels)) & 0x0000FFFF
     elif instr == 'LB':
-        grid[rd] = sign_extend(get_memory_value(imm + grid[rs1], grid_labels), 8)
+        grid[rd] = get_memory_value(imm + grid[rs1], grid_labels, 8)
     elif instr == 'LBU':
-        grid[rd] = get_memory_value(imm + grid[rs1], grid_labels) & 0x000000FF
+        grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels)) & 0x000000FF
     elif instr == 'SW':
         memory[rs1 + imm] = grid[rs2]
     elif instr == 'SH':
-        memory[rs1 + imm] = sign_extend(grid[rs2] & 0x0000FFFF, 16)
+        memory[rs1 + imm] = sign_extend(grid[rs2], 16)
     elif instr == 'SB':
         memory[rs1 + imm] = sign_extend(grid[rs2], 8)
 
-def get_memory_value(memory_address, grid_labels):
+def get_memory_value(memory_address, grid_labels, size):
     target_address = f"M{memory_address}"
     for label in grid_labels:
         frame = label.master
@@ -140,7 +144,7 @@ def get_memory_value(memory_address, grid_labels):
                     if isinstance(next_widget, ttk.Label) and next_widget.cget("text") != target_address:
                         value_text = next_widget.cget("text")
                         if value_text:
-                            value = int(value_text)
+                            value = sign_extend(int(value_text), size)
                             return value
 
     return None
@@ -154,10 +158,15 @@ def logical_right_shift(value, shift_amount):
     unsigned_value = convert_to_unsigned(value)
     result = unsigned_value >> shift_amount
 
-    return result & 0xFFFFFFFF
+    return result
 
 def sign_extend(value, size):
+    #size is the final bit size to extend the value to
     sign_bit = 1 << (size - 1)
-    extended_value = (value & (sign_bit - 1) - value & sign_bit)
-
-    return extended_value & 0xFFFFFFFF
+    mask = (1 << size) - 1
+    value &= mask
+    if value & sign_bit:
+        extended_value = value - (1 << size)
+    else:
+        extended_value = value
+    return extended_value
