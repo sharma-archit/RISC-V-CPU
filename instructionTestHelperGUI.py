@@ -6,7 +6,7 @@ def create_grid_window(grid):
     window.title("Register File and Data Memory Grid")
     window.configure(bg="black")
 
-    window.maxsize(1080, 1872)
+    # window.maxsize(1080, 1872)
 
     style = ttk.Style()
     style.configure("TLabel", font=("Arial", 12), padding=5, borderwidth=0, relief="flat", background="black", foreground="white")
@@ -23,7 +23,7 @@ def create_grid_window(grid):
         separator.grid(row=1, column=0, sticky="nsew", padx=5, pady=2)
         frame.grid_columnconfigure(0, weight=1)
 
-        value_label = ttk.Label(frame, text="", style="TLabel")
+        value_label = ttk.Label(frame, text=str(grid[i]), style="TLabel")
         value_label.grid(row=2, column=0, sticky="nsew")
         grid_labels.append(value_label)
 
@@ -56,14 +56,10 @@ def update_grid(grid, grid_labels, memory, memory_grid_column, window):
             memory.clear()
 
     for i in range(len(grid)):
-        if grid[i] != 0:
-            value = grid[i]
-            style = "Highlighted.TLabel" if value != 0 else "TLabel"
-            grid_labels[i].config(text=value, style=style)
-            grid_labels[i].grid()
-
-        else:
-            grid_labels[i].grid_remove()
+        value = grid[i]
+        style = "Highlighted.TLabel" if value != 0 else "TLabel"
+        grid_labels[i].config(text=value, style=style)
+        grid_labels[i].grid()
 
     grid_labels[0].config(text=0, style=style)
 
@@ -96,9 +92,9 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'ADD':
         grid[rd] = grid[rs1] + grid[rs2]
     elif instr == 'SLT':
-        grid[rd] = 1 if grid[rs1] < imm else 0
+        grid[rd] = 1 if grid[rs1] < grid[rs2] else 0
     elif instr == 'SLTU':
-        grid[rd] = 1 if convert_to_unsigned(grid[rs1]) < convert_to_unsigned(imm) else 0
+        grid[rd] = 1 if convert_to_unsigned(grid[rs1]) < convert_to_unsigned(grid[rs2]) else 0
     elif instr == 'AND':
         grid[rd] = grid[rs1] & grid[rs2]
     elif instr == 'OR':
@@ -120,11 +116,11 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'LH':
         grid[rd] = get_memory_value(imm + grid[rs1], grid_labels, 16)
     elif instr == 'LHU':
-        grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels)) & 0x0000FFFF
+        grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels, 16))
     elif instr == 'LB':
         grid[rd] = get_memory_value(imm + grid[rs1], grid_labels, 8)
     elif instr == 'LBU':
-        grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels)) & 0x000000FF
+        grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels, 8))
     elif instr == 'SW':
         memory[rs1 + imm] = grid[rs2]
     elif instr == 'SH':
@@ -132,7 +128,7 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'SB':
         memory[rs1 + imm] = sign_extend(grid[rs2], 8)
 
-def get_memory_value(memory_address, grid_labels, size):
+def get_memory_value(memory_address, grid_labels, size = 32):
     target_address = f"M{memory_address}"
     for label in grid_labels:
         frame = label.master
