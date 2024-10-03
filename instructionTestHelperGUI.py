@@ -102,13 +102,13 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'XOR':
         grid[rd] = grid[rs1] ^ grid[rs2]
     elif instr == 'SLL':
-        grid[rd] = (grid[rs1] << grid[rs2])
+        grid[rd] = (grid[rs1] << (grid[rs2] & 0b11111))
     elif instr == 'SRL':
-        grid[rd] = logical_right_shift(grid[rs1], grid[rs2])
+        grid[rd] = logical_right_shift(grid[rs1], (grid[rs2] & 0b11111))
     elif instr == 'SUB':
         grid[rd] = grid[rs2] - grid[rs1]
     elif instr == 'SRA':
-        grid[rd] = grid[rs1] >> grid[rs2]
+        grid[rd] = grid[rs1] >> (grid[rs2] & 0b11111)
     elif instr in ['JAL', 'JALR']:
         grid[rd] = PC + 4
     elif instr == 'LW':
@@ -166,3 +166,9 @@ def sign_extend(value, size):
     else:
         extended_value = value
     return extended_value
+
+def size_inputs(value, bits):
+    if value < 0:
+        value = (1 << bits) + value
+
+    return format(value, f'0{bits}b')
