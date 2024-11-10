@@ -6,8 +6,6 @@ def create_grid_window(grid):
     window.title("Register File and Data Memory Grid")
     window.configure(bg="black")
 
-    # window.maxsize(1080, 1872)
-
     style = ttk.Style()
     style.configure("TLabel", font=("Arial", 12), padding=5, borderwidth=0, relief="flat", background="black", foreground="white")
     style.configure("Highlighted.TLabel", font=("Arial", 12), padding=5, borderwidth=0, relief="flat", background="black", foreground="white")
@@ -35,9 +33,11 @@ def create_grid_window(grid):
     return window, grid_labels
 
 def update_grid(grid, grid_labels, memory, memory_grid_column, window):
-    memory_items = list(memory.items())
-    for address, value in memory_items:
-        if value != 0:
+    if memory:
+        address, value = next(iter(memory.items()))
+        memory_address_exists = check_memory_address(address, grid_labels)
+
+        if not memory_address_exists:
             memory_grid_column += 1
             grid.append(value)
             frame = tk.Frame(window, bg='black', bd=1, relief="solid", highlightbackground="white", highlightcolor="white", highlightthickness=1)
@@ -52,8 +52,10 @@ def update_grid(grid, grid_labels, memory, memory_grid_column, window):
             value_label = ttk.Label(frame, text="", style="TLabel")
             value_label.grid(row=2, column=0, sticky="nsew")
             grid_labels.append(value_label)
+        elif memory_address_exists:
+            grid[32 + address] = value
 
-            memory.clear()
+    memory.clear()
 
     for i in range(len(grid)):
         value = grid[i]
@@ -122,11 +124,11 @@ def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
     elif instr == 'LBU':
         grid[rd] = convert_to_unsigned(get_memory_value(imm + grid[rs1], grid_labels, 8))
     elif instr == 'SW':
-        memory[rs1 + imm] = grid[rs2]
+        memory[grid[rs1] + imm] = grid[rs2]
     elif instr == 'SH':
-        memory[rs1 + imm] = sign_extend(grid[rs2], 16)
+        memory[grid[rs1] + imm] = sign_extend(grid[rs2], 16)
     elif instr == 'SB':
-        memory[rs1 + imm] = sign_extend(grid[rs2], 8)
+        memory[grid[rs1] + imm] = sign_extend(grid[rs2], 8)
 
 def get_memory_value(memory_address, grid_labels, size = 32):
     target_address = f"M{memory_address}"
@@ -172,3 +174,13 @@ def size_inputs(value, bits):
         value = (1 << bits) + value
 
     return format(value, f'0{bits}b')
+
+def check_memory_address(memory_address, grid_labels):
+    target_address = f"M{memory_address}"
+    for label in grid_labels:
+        frame = label.master
+        widgets = frame.winfo_children()
+        for widget in widgets:
+            if isinstance(widget, ttk.Label) and widget.cget("text") == target_address:
+                return True
+    return False

@@ -158,7 +158,7 @@ while True:
     rs2 = rs1 = rd = imm = None
 
     if instruction_set[instr]['type'] in ['I', 'S', 'B']:
-        if instruction_set[instr]['special']:
+        if instruction_set[instr].get('special', False):
             imm = get_valid_input(instruction_set[instr]['imm'], 0, 31) # 5-bit immeidate value (cannot be signed)
         else:
             imm = get_valid_input(instruction_set[instr]['imm'], -2048, 2047)  # 12-bit signed immediate
