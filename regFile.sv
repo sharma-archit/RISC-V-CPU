@@ -17,6 +17,7 @@ module regFile #(parameter ADDR_SIZE = 5,
 //Register data storage
 localparam NUM_REGISTERS = 32; // Number of registers in the register file
 logic [NUM_REGISTERS - 1:0][XLEN - 1:0] cpu_register;
+logic[NUM_REGISTERS - 1:0][XLEN - 1:0] cpu_register_d;
 
 assign cpu_register[0] = '0; // register x0 hardwired to 0
 
@@ -26,31 +27,33 @@ always_ff @(posedge clk) begin
 
         for (int i = 1; i < NUM_REGISTERS; i++) begin
 
-            cpu_register[i] <= '0;
+            cpu_register_d[i] <= '0;
 
         end
-            
     end
-    else begin
 
-        if (write_enable) begin
+        else begin
             
-            if (write_addr != 0) begin // register x0 cannot be written to
-
-                cpu_register[write_addr] <= write_data;
-
-            end
+            cpu_register_d <= cpu_register;
 
         end
-
-    end
-
 end
 
 always_comb begin
 
+    cpu_register = cpu_register_d
     read_data1 = '0;
     read_data2 = '0;
+
+    if (write_enable) begin
+        
+        if (write_addr != 0) begin // register x0 cannot be written to
+
+            cpu_register[write_addr] = write_data;
+
+        end
+
+    end
 
     if (read_enable1) begin
 
@@ -62,7 +65,7 @@ always_comb begin
         read_data2 = cpu_register[read_addr2];
 
     end
-        
+
 end
 
 endmodule
