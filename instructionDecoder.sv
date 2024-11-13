@@ -480,23 +480,22 @@ always_comb begin : decoder
 
         end
         
-        FENCE: begin 
+        FENCE: begin //Not required in current implementation, only useful for multi core systems
 
-            //Not really sure what this is for, think its for multi core designs
+            
             alu_sel = ADD;
             
         end
         
-        ECB: begin
+        ECB: begin //Not required in current implementation, only useful when running an OS
 
-            //Not really sure what this is for, think its for interrupt handling
-            if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000000) begin //ECALL
+            if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000000) begin //ECALL: System call
 
                 alu_sel = ADD;
 
             end
 
-            if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000001) begin //EBREAK
+            if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000001) begin //EBREAK: Debugging breakpoint
 
                 alu_sel = ADD;
 
