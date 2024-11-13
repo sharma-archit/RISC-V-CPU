@@ -68,7 +68,6 @@ def update_grid(grid, grid_labels, memory, memory_grid_column, window):
     return memory_grid_column, grid_labels
 
 def update_grid_values(instr, rs1, rs2, rd, imm, grid, grid_labels, memory, PC):
-# Update the registers based on the instruction
     if instr == 'ADDI':
         grid[rd] = grid[rs1] + imm
     elif instr == 'SLTI':

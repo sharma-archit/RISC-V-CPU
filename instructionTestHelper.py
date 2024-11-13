@@ -2,7 +2,7 @@ from instructionTestHelperCoreFunctions import create_instruction, get_valid_inp
 from instructionTestHelperGUI import update_grid, create_grid_window, update_grid_values
 import configparser
 
-# Define the RISC-V instruction set with proper values
+# Define the RISC-V instruction set
 instruction_set = {
     'ADDI': {'type': 'I', 'funct3': '000', 'opcode': '0010011',
              'imm': 'Enter the first number to ADD: ',
@@ -121,6 +121,32 @@ instruction_set = {
              'imm': 'Enter the first value to calculate the memory address: ',
              'rs1': 'Enter the register location of the second value to calculate the memory address: ',
              'rs2': 'Enter the register location of the value to move to memory: '},
+    'FENCE': {'funct3': '000', 'opcode': '0001111',
+              'fm': '0000',
+              'pred': '0000',
+              'succ': '0000',
+              'rs1': 0b00000,
+              'rd': 0b00000},
+    'FENCE.TSO': {'funct3': '000', 'opcode': '0001111',
+              'fm': '1000',
+              'pred': '0011',
+              'succ': '0011',
+              'rs1': 0b00000,
+              'rd': 0b00000},
+    'PAUSE': {'funct3': '000', 'opcode': '0001111',
+              'fm': '0000',
+              'pred': '0001',
+              'succ': '0000',
+              'rs1': 0b00000,
+              'rd': 0b00000},
+    'ECALL': {'type': 'I', 'funct3': '000', 'opcode': '1110011',
+              'imm': 0b000000000000,
+              'rs1': 0b00000,
+              'rs2': 0b00000},
+    'EBREAK': {'type': 'I', 'funct3': '000', 'opcode': '1110011',
+               'imm': 0b000000000001,
+              'rs1': 0b00000,
+              'rs2': 0b00000}
 }
 
 # Read the configuration file
@@ -145,7 +171,7 @@ written_registers = set()
 # Create the grid window
 window, grid_labels = create_grid_window(grid)
 
-# Get user input for multiple instructions
+# Get user input for instruction(s)
 while True:
     instr = input("Enter the RISC-V instruction (or 'done' to finish): ").upper()
     if instr == 'DONE':
@@ -157,19 +183,34 @@ while True:
 
     rs2 = rs1 = rd = imm = None
 
-    if instruction_set[instr]['type'] in ['I', 'S', 'B']:
+    if instruction_set[instr]['opcode'] in ['0010011', '0100011', '1100011']:
         if instruction_set[instr].get('special', False):
             imm = get_valid_input(instruction_set[instr]['imm'], 0, 31) # 5-bit immeidate value (cannot be signed)
         else:
             imm = get_valid_input(instruction_set[instr]['imm'], -2048, 2047)  # 12-bit signed immediate
-    elif instruction_set[instr]['type'] in ['U', 'J']:
+    elif instruction_set[instr]['opcode'] in ['0010111', '1101111']:
         imm = get_valid_input(instruction_set[instr]['imm'], 0, 1048575)  # 20-bit unsigned immediate
-    if instruction_set[instr]['type'] in ['R', 'I', 'S', 'B']:
-        rs1 = get_valid_input(instruction_set[instr]['rs1'], 0, 31)
-    if instruction_set[instr]['type'] in ['R', 'S', 'B']:
+    if instruction_set[instr]['opcode'] in ['0110011', '0010011', '0100011', '1100011']:
+            rs1 = get_valid_input(instruction_set[instr]['rs1'], 0, 31)
+    if instruction_set[instr]['opcode'] in ['0110011', '0100011', '1100011']:
         rs2 = get_valid_input(instruction_set[instr]['rs2'], 0, 31)
-    if instruction_set[instr]['type'] in ['R', 'I', 'U', 'J']:
-        rd = get_valid_input("Enter the register location to store the output: ", 0, 31)
+    if instruction_set[instr]['opcode'] in ['0110011', '0010011', '0010111', '1101111']:
+            rd = get_valid_input("Enter the register location to store the output: ", 0, 31)
+    if instruction_set[instr]['opcode'] == '0001111':
+        if instruction_set[instr] == 'FENCE': # Separate if statement for when it is properly implemented in the design
+            imm = instruction_set[instr]['fm'] + instruction_set[instr]['pred'] + instruction_set[instr]['succ'] # When implemented fm, pred, succ,
+            print(imm)
+            rs1 = instruction_set[instr]['rs1']                                                                  # rs1, and
+            rd = instruction_set[instr]['rd']                                                                    # rs2 will come from user inputs
+        else:
+            imm = instruction_set[instr]['fm'] + instruction_set[instr]['pred'] + instruction_set[instr]['succ']
+            print(imm)
+            rs1 = instruction_set[instr]['rs1']
+            rd = instruction_set[instr]['rd']
+    if instruction_set[instr]['opcode'] == '1110011':
+        imm = instruction_set[instr]['imm']
+        rs1 = instruction_set[instr]['rs1']
+        rd = instruction_set[instr]['rs2']
 
     binary_instruction = create_instruction(instruction_set, instr, rs2, rs1, rd, imm)
     instructions.append(binary_instruction)
@@ -180,13 +221,11 @@ while True:
 
     memory_grid_column, grid_labels = update_grid(grid, grid_labels, memory, memory_grid_column, window)
 
-# Ensure the instructions list is not empty before writing to the testbench file
 if instructions:
-    # Write the binary instructions to the testbench file
     with open(testbench_file, 'r') as file:
         lines = file.readlines()
 
-    # Find the "initial begin" and "end" lines and overwrite anything between them
+    # Find "initial begin" and "end" lines and write between
     dbg_addr = 0
     inside_initial_block = False
     new_lines = []
@@ -211,7 +250,7 @@ if instructions:
         else:
             new_lines.append(line)
 
-    # Write the modified lines back to the file
+    # Write back to testbench
     with open(testbench_file, 'w') as file:
         file.writelines(new_lines)
 
