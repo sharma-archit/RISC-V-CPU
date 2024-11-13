@@ -479,8 +479,23 @@ always_comb begin : decoder
         
         FENCE: begin //Not required in current implementation, only useful for multi core systems
 
-            
+            // NOP since instruction is not implemented
+            alu_enable = 1;
+
+            rf_read_enable1 = 1;
+            rf_read_addr1 = 0;
+
+            rf_write_enable = 1;
+            rf_write_addr = 0;
+            rf_write_data_sel = ALU;
+
+            destination_reg = 0;
+            source_reg1 = 0;
+            source_reg2 = 'x;
+
             alu_sel = ADD;
+            alu_data_in_a = rf_read_data1;
+            alu_data_in_b = 0;
             
         end
         
@@ -488,23 +503,55 @@ always_comb begin : decoder
 
             if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000000) begin //ECALL: System call
 
+                // NOP since instruction is not implemented
+                alu_enable = 1;
+
+                rf_read_enable1 = 1;
+                rf_read_addr1 = 0;
+
+                rf_write_enable = 1;
+                rf_write_addr = 0;
+                rf_write_data_sel = ALU;
+
+                destination_reg = 0;
+                source_reg1 = 0;
+                source_reg2 = 'x;
+
                 alu_sel = ADD;
+                alu_data_in_a = rf_read_data1;
+                alu_data_in_b = 0;
 
             end
 
             if(instruction[XLEN - 1:XLEN - FUNCT12] == 12'b000000000001) begin //EBREAK: Debugging breakpoint
 
+                // NOP since instruction is not implemented
+                alu_enable = 1;
+
+                rf_read_enable1 = 1;
+                rf_read_addr1 = 0;
+
+                rf_write_enable = 1;
+                rf_write_addr = 0;
+                rf_write_data_sel = ALU;
+
+                destination_reg = 0;
+                source_reg1 = 0;
+                source_reg2 = 'x;
+
                 alu_sel = ADD;
+                alu_data_in_a = rf_read_data1;
+                alu_data_in_b = 0;
 
             end
 
         end
 
         default: begin
-            //raise error
+            //Since all signals are set to zero in the beginning of the decode cycle nothing will happen if it's an invalid instruction
         end
 
-    endcase //Since all signals are set to zero in the beginning of the decode cycle nothing will happen if it's an invalid instruction
+    endcase
 
 end : decoder
 
