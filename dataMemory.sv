@@ -1,6 +1,6 @@
 module dataMemory #(parameter XLEN = 32
                     parameter BYTE_SIZE = 8
-                    parameter MEM_STEPS = 4)
+                    parameter MEM_STEPS = XLEN/BYTE_SIZE)
 (
     input  read_enable,
     input  write_enable,
