@@ -24,7 +24,7 @@ always_comb begin
 
         memory_read_addr = MEM_STEPS * read_addr - MEM_STEPS;
     
-        for (int i = 0; i < (XLEN/BYTE_SIZE) ; i++) begin // Transfer 8 bit data sets in 4 steps, totalling 32 bits
+        for (int i = 0; i < (MEM_STEPS) ; i++) begin // Transfer 8 bit data sets in 4 steps, totalling 32 bits
 
             read_data[i] = data_memory[memory_read_addr + i];
 
@@ -36,7 +36,7 @@ always_comb begin
 
         memory_write_addr = MEM_STEPS * write_addr - MEM_STEPS;
 
-        for (int i = 0; i < (XLEN/BYTE_SIZE) ; i++) begin // Transfer 8 bit data sets in 4 steps, totalling 32 bits
+        for (int i = 0; i < (MEM_STEPS) ; i++) begin // Transfer 8 bit data sets in 4 steps, totalling 32 bits
 
             data_memory[memory_write_addr + i] = write_data[i];
 
