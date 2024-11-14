@@ -8,9 +8,7 @@ module writeBackCycle #(
 );
 
     enum {ALU, DATA_MEM} WRITEBACK_DATA_SEL;
-    
-    //NOTE make sure to implement the mux for data to write back to destination register
-    //This is where the bundle of register write signals are required
+
 always_comb begin
 
     writeback_data = '0;

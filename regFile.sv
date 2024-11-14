@@ -25,18 +25,15 @@ always_ff @(posedge clk) begin
 
     if (rst) begin
 
-        for (int i = 1; i < NUM_REGISTERS; i++) begin
+        cpu_register_d <= '0;
 
-            cpu_register_d[i] <= '0;
-
-        end
     end
 
-        else begin
-            
-            cpu_register_d <= cpu_register;
+    else begin
+        
+        cpu_register_d <= cpu_register;
 
-        end
+    end
 end
 
 always_comb begin

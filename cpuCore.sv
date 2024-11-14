@@ -269,7 +269,7 @@ memoryAccessCycle memory_access_cycle (
     .dm_data_bypass(dm_data_bypass)
 );
 
-// // Memory Access -> Writeback Flop
+// Memory Access -> Writeback Flop
 // always_ff @(posedge(clk)) begin : memaccess_to_writeback_FF
 
 //     if (rst) begin

@@ -16,9 +16,6 @@ logic [11:0] JALR_offset;
 enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
     always_comb begin
-        
-        //Reordering offset
-        //offset[11:0] = {offset[11], offset[0], offset[10:6], offset[5:1]};
 
         case (operation)
             
