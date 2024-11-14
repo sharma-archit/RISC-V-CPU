@@ -1,7 +1,7 @@
 # 32-Bit RISC-V CPU
 
 This is a custom design of a 32-bit CPU based on RISC-V. The design implements the RV32I base instruction set using the Harvard architecture.
-The CPU is a 4-stage pipeline processor with the Memory Access and Writeback stages merged into one pipeline cycle but denoted as separate stages:
+The CPU is a 4-stage pipeline processor with the Memory Access and Writeback stages merged into one pipeline cycle but represented as separate stages for clarity:
 
 Fetch
 - The Fetch stage contains the instruction memory and the program counter.
