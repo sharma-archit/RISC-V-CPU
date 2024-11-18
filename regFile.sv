@@ -9,9 +9,9 @@ module regFile #(parameter ADDR_SIZE = 5,
     input [ADDR_SIZE - 1:0] read_addr1,
     input [ADDR_SIZE - 1:0] read_addr2,
     input [ADDR_SIZE - 1:0] write_addr,
-    input [XLEN - 1:0]      write_data,
-    output logic [XLEN - 1:0] read_data1,
-    output logic [XLEN - 1:0] read_data2
+    input signed [XLEN - 1:0]      write_data,
+    output logic signed [XLEN - 1:0] read_data1,
+    output logic signed [XLEN - 1:0] read_data2
 );
 
 //Register data storage
@@ -25,18 +25,15 @@ always_ff @(posedge clk) begin
 
     if (rst) begin
 
-        for (int i = 1; i < NUM_REGISTERS; i++) begin
+        cpu_register_d <= '0;
 
-            cpu_register_d[i] <= '0;
-
-        end
     end
 
-        else begin
-            
-            cpu_register_d <= cpu_register;
+    else begin
+        
+        cpu_register_d <= cpu_register;
 
-        end
+    end
 end
 
 always_comb begin

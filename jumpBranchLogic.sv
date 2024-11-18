@@ -4,21 +4,17 @@ module jumpBranchLogic #(parameter OFFSET_SIZE = 12,
                          parameter XLEN = 32)
 (
     input [OPERATION_SIZE - 1:0]  operation,
-    input [OFFSET_SIZE - 1:0] offset,
-    input [JAL_OFFSET_SIZE - 1:0] jal_offset,
-    input [XLEN - 1:0] data_in1,
-    input [XLEN - 1:0] data_in2,
+    input signed [OFFSET_SIZE - 1:0] offset,
+    input signed [JAL_OFFSET_SIZE - 1:0] jal_offset,
+    input signed [XLEN - 1:0] data_in1,
+    input signed [XLEN - 1:0] data_in2,
     input [XLEN - 1:0] address_in, // tie to program counter
     output logic [XLEN - 1:0] address_out
 );
 
-logic [11:0] JALR_offset;
 enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
 
     always_comb begin
-        
-        //Reordering offset
-        //offset[11:0] = {offset[11], offset[0], offset[10:6], offset[5:1]};
 
         case (operation)
             
@@ -130,6 +126,12 @@ enum {JAL, JALR, BEQ, BNE, BLT, BGE, BLTU, BGEU} JBL_OP;
             end
 
         endcase
+
+        if (address_out < 0) begin
+            
+            address_out = address_in;
+
+        end
 
     end
 

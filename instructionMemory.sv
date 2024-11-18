@@ -7,7 +7,7 @@ module instructionMemory #(parameter XLEN = 32)
     // debug ports to write into instruction memory during testing
     input dbg_wr_en,
     input [XLEN-1:0] dbg_addr,
-    //output [XLEN-1:0] dbg_instr
+    //input [XLEN-1:0] dbg_instr
     input [3:0][7:0] dbg_instr
 );
 
