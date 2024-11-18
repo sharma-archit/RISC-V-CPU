@@ -5,9 +5,9 @@ module arithmeticLogicUnit #(parameter SEL_SIZE = 4,
     input  enable,
     input  [SEL_SIZE - 1:0]  sel,
     input  [SHIFT_SIZE - 1:0]  shift_amt,
-    input  [XLEN - 1:0] data_in_a,
-    input  [XLEN - 1:0] data_in_b,
-    output logic [XLEN - 1:0] data_out    
+    input  signed [XLEN - 1:0] data_in_a,
+    input  signed [XLEN - 1:0] data_in_b,
+    output logic signed [XLEN - 1:0] data_out
     );
 
 enum {ADD, SUB, SLT, SLTU, ANDI, ORI, XORI, SLL, SRL, SRA, LUI, AUIPC} ALU_OP_E; //ANDI, ORI, and XORI are used to avoid using SystemVerilog keywords

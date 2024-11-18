@@ -9,9 +9,9 @@ module regFile #(parameter ADDR_SIZE = 5,
     input [ADDR_SIZE - 1:0] read_addr1,
     input [ADDR_SIZE - 1:0] read_addr2,
     input [ADDR_SIZE - 1:0] write_addr,
-    input [XLEN - 1:0]      write_data,
-    output logic [XLEN - 1:0] read_data1,
-    output logic [XLEN - 1:0] read_data2
+    input signed [XLEN - 1:0]      write_data,
+    output logic signed [XLEN - 1:0] read_data1,
+    output logic signed [XLEN - 1:0] read_data2
 );
 
 //Register data storage
